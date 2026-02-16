@@ -1,0 +1,333 @@
+### **4. Teaching the Beast (Agent Skills)**
+
+The final part of your first step is teaching the AI your specific rules so you don't have to repeat prompts [24, 25].
+
+* **Create a .md Skill File:** Create a folder named `agent.skills` and add a file called `skill.md` [26, 27].
+* **Define Your Standards:** Write down exactly how you want tasks performed—such as your brand voice, specific design rules (like using **UI Pro Max** for high-end design), or business logic [18, 28, 29]. The AI will reference this "instruction manual" forever [25, 30]
+
+i want you to elaborate and make a step by step instructions manual to follow this plan but go more in depth with what type of skills traits and actions we will be creating....
+
+You’re basically designing a “mini‑OS” for your agent: folders of reusable skills, plus a persistent instruction manual for how it should think, talk, and execute work for you.[1][2] Below is a step‑by‑step plan with concrete categories of skills, traits, and actions to define.
+
+***
+
+## 1. Folder and file structure
+
+1. In the root of your project or repo, create a folder:
+   * `agent.skills/`
+2. Inside it, organize skills by domain:
+   * `agent.skills/brand/`
+   * `agent.skills/design/`
+   * `agent.skills/ops/`
+   * `agent.skills/research/`
+   * `agent.skills/coding/`
+   * `agent.skills/workflows/` (for multi‑step processes)
+3. In each folder, create a `skill.md` (or `SKILL.md` if your platform expects that name) that contains:
+   * A YAML frontmatter header with metadata.
+   * A detailed “how to behave and what to do” section.[3][2][4]
+
+**Example basic `skill.md` skeleton:**
+
+```markdown
+---
+name: Brand Voice & Personality
+description: Rules for how to speak, write, and interact in my brand voice.
+version: 1.0
+owner: your-name
+tags: [brand, voice, tone, writing]
+allowed-tools: []  # or ["browser", "terminal"] etc, if supported
+---
+
+# Role
+
+You are the primary AI assistant for my brand. You always follow these rules when communicating in my name.
+
+# Core Personality Traits
+
+- ...
+
+# Tone & Style Rules
+
+- ...
+
+# Response Structure
+
+- ...
+
+# Examples
+
+- User asks: ...
+- Assistant responds: ...
+```
+
+This frontmatter pattern (name + description + optional metadata) is what most agent frameworks expect when discovering skills.[3][5][2][4]
+
+***
+
+## 2. Global standards skill (your “OS”)
+
+Create a global manual that everything else inherits from, e.g. `agent.skills/core/skill.md`. This defines universal rules the agent should follow **for all tasks**.
+
+### 2.1. Core identity and role
+
+Specify who the agent is, who it serves, and its default priorities.[6]
+
+Include:
+
+* Role: “You are my general‑purpose operator, strategist, and writer.”
+* Priorities: accuracy, usefulness, speed hierarchy (“accuracy > clarity > speed”).
+* Safety: what to avoid (e.g., no legal/medical advice, no speculation about private data).
+
+### 2.2. Thinking and execution process
+
+Define how the agent should think and act internally:
+
+* Always restate the task in your own words before acting.
+* Break complex tasks into a short, numbered plan before execution.
+* Prefer automation and scripts over manual, repetitive text when tools are available.[3][5]
+* Ask for clarification if critical details are missing (budget, platform, audience).
+
+### 2.3. Output formatting standards
+
+Set defaults you like, for example:
+
+* Use Markdown, with H2/H3 headers for structure.
+* Use bullet lists for steps or options.
+* Include one practical example whenever concepts are abstract.
+* For technical tasks: include command blocks, note OS, note versions.
+
+This file becomes the base OS manual that other skills can assume is already in place.
+
+***
+
+## 3. Brand voice skill
+
+This is where you define **how** the AI should sound across everything.[7][8][9]
+
+### 3.1. Personality traits
+
+Pick 3–5 **core** traits and define them operationally, e.g.:
+
+* **Practical** – avoids fluff, focuses on actionable steps and trade‑offs.
+* Curious – sometimes offers “bonus” ideas or optimizations.
+* Calm – de‑escalates frustration, explains when things go wrong.
+* Straightforward – avoids buzzwords, uses concrete language.
+
+For each trait, add “do/don’t” examples:
+
+* Practical:
+  * Do: “Here are three options, with pros and cons.”
+  * Don’t: “In today’s rapidly evolving digital landscape…”
+
+### 3.2. Tone settings by context
+
+Define tone rules based on user state or channel:[7][8]
+
+* Default: conversational, moderately technical, assumes an intermediate user.
+* When user is frustrated: more empathetic, short answers first, less jargon.
+* Public‑facing content (email, landing page): slightly more polished, proofread tone.
+* Internal notes for you: telegraphic, concise, can be more technical.
+
+### 3.3. Language patterns and phrases
+
+Lock in repeatable patterns:[7][8]
+
+* Preferred greetings/openings (or no greetings).
+* Phrases to **use** (e.g., “Here’s the direct answer:”).
+* Phrases to **avoid** (e.g., “As an AI language model…”).
+* Rules around humor, emojis, and informality.
+
+Add a few example dialogues to show correct and incorrect voice.
+
+***
+
+## 4. Design skills (e.g., “UI Pro Max”)
+
+Create a skill specifically for design work, e.g. `agent.skills/design/skill.md`. This should encode:
+
+### 4.1. Design philosophy
+
+Define what “**UI Pro Max**” means for you:
+
+* High‑end aesthetic: minimalism, good whitespace, strong typography.
+* Default color strategy: e.g., limited palette with one accent.
+* Component‑first thinking: layout → hierarchy → components → microcopy.
+
+### 4.2. Expected outputs
+
+Specify what you want when you say “design X”:
+
+* For UI wireframes: textual component breakdown (“Header: …”, “Sidebar: …”).
+* For marketing visuals: concept description + text + layout idea.
+* For style systems: tokens (colors, spacing, typography), component list, usage notes.
+
+Example requirement section:
+
+* When I ask for a UI:
+  * Step 1: summarize the user goal and primary action.
+  * Step 2: define layout regions and hierarchy.
+  * Step 3: list components with states (default, hover, error).
+  * Step 4: describe visual style using my brand tokens.
+
+### 4.3. Constraints and libraries
+
+If you use specific tooling, note it:
+
+* Prefer Tailwind classes, Figma frame naming, or HTML/CSS structures.
+* Avoid suggesting components I can’t build with my current stack.
+
+***
+
+## 5. Operational skills (project and ops workflows)
+
+These skills define **how you want work executed**: planning, prioritization, QA, etc.[3][10]
+
+### 5.1. Planning skill
+
+`agent.skills/ops-planning/skill.md`:
+
+* Always turn vague goals into a structured plan:
+  * Clarify objective, constraints, and success criteria.
+  * Break into milestones and tasks.
+  * Estimate difficulty and dependencies.
+* Prefer “analyze → plan → execute → review” loops for complex tasks.[10]
+
+### 5.2. QA and review skill
+
+`agent.skills/ops-qa/skill.md`:
+
+* For technical answers:
+  * Check commands for obvious platform mismatches.
+  * Add a “pitfalls” or “things to verify” section for risky steps.
+* For text outputs:
+  * Scan once for clarity and consistency with brand voice.
+  * Check against brand rules (tone, banned phrases).
+
+***
+
+## 6. Research and analysis skills
+
+A research skill defines **how to search, synthesize, and judge quality**.[3][8]
+
+### 6.1. Research process
+
+In `agent.skills/research/skill.md`:
+
+* Clarify the question and what output format you want.
+* Use multiple sources where possible; note conflicting info.
+* Distinguish:
+  * Hard facts (with citations).
+  * Interpretations or opinions (label as such).
+* Summarize with:
+  * Key points.
+  * Trade‑offs.
+  * One actionable recommendation if requested.
+
+### 6.2. Depth levels
+
+Define levels of depth:
+
+* “Quick scan” → 3–5 bullets, minimal detail.
+* “Standard brief” → 3–5 sections, each 2–3 sentences.
+* “Deep dive” → allow longer output, structured sections and maybe a short table.
+
+***
+
+## 7. Coding and technical skills
+
+You can define one generic coding skill, plus specialized ones (e.g., “Linux admin,” “Python scripting”).[6][4]
+
+### 7.1. Generic coding skill
+
+`agent.skills/coding/skill.md`:
+
+* Clarify environment: OS, language version, constraints.
+* Prefer small, composable functions rather than monolithic scripts.
+* Always:
+  * Explain assumptions.
+  * Show how to run the code.
+  * Provide minimal tests or usage examples.
+* Document clearly: inline comments only where needed, plus short usage note.
+
+### 7.2. System administration skill
+
+`agent.skills/sysadmin/skill.md`:
+
+* Assume Linux (Ubuntu), CLI‑first.
+* When asked for changes:
+  * Show commands in order, with brief explanations.
+  * Call out irreversible actions.
+  * Suggest verification commands and rollback ideas.
+
+***
+
+## 8. Workflow skills (multi‑step “macros”)
+
+These are where you define **recipes** for recurrent tasks you do often.[3][2]
+
+Examples you might create:
+
+* “Write a landing page” workflow.
+* “Turn raw notes into a project plan.”
+* “Debug a failed deployment.”
+
+Each workflow skill includes:
+
+1. When to use it:
+   * “Use this skill when the user asks for X.”
+2. Inputs:
+   * “Needs: target audience, goal, constraints (budget, tech stack).”
+3. Steps:
+   * A numbered process for the agent:
+     * Step 1: ask missing questions or infer from context.
+     * Step 2: create outline/plan.
+     * Step 3: draft.
+     * Step 4: review against brand voice and constraints.
+4. Output template:
+   * The exact sections or fields to produce.
+
+***
+
+## 9. Maintenance and evolution rules
+
+In your core skill, add rules for continuous improvement:[7][8]
+
+* If I correct you, treat that as updated policy going forward (and summarize it back).
+* If similar tasks recur, propose a new specialized skill or an update to an existing one.
+* Version skills:
+  * Track `version: 1.0`, increment when you change major behavior.
+  * Optionally add `changelog` at the bottom of each skill.
+
+***
+
+## 10. Concrete checklist to implement this
+
+Follow this sequence once:
+
+1. Create `agent.skills/` directory and subfolders:
+   * `core`, `brand`, `design`, `ops-planning`, `ops-qa`, `research`, `coding`, `sysadmin`, `workflows`.
+2. For each, add a `skill.md` with:
+   * Frontmatter: `name`, `description`, `version`, `tags`.[3][2][4]
+   * Body: role, when to use, process steps, output format, examples.
+3. Start with three high‑leverage skills:
+   * Core standards.
+   * Brand voice & personality.
+   * One workflow you do all the time (e.g., “turn my ideas into a 3‑section plan”).
+4. As you use the agent:
+   * Note friction (“I keep repeating X”).
+   * Move that repeated instruction into the relevant skill.
+   * Bump the `version` and adjust examples.
+
+If you’d like, tell me your brand traits and your typical tasks (e.g., “DevOps helper,” “course creation,” “client emails”), and I can draft the first actual `skill.md` files for you with your specifics baked in.
+
+Citations:
+[1] Spring AI Agentic Patterns (Part 1): Agent Skills <https://spring.io/blog/2026/01/13/spring-ai-generic-agent-skills>
+[2] What are skills? - Agent Skills <https://agentskills.io/what-are-skills>
+[3] How to Write and Implement Agent Skills - DigitalOcean <https://www.digitalocean.com/community/tutorials/how-to-implement-agent-skills>
+[4] About Agent Skills - GitHub Docs <https://docs.github.com/en/copilot/concepts/agents/about-agent-skills>
+[5] Agent Skills - OpenAI for developers <https://developers.openai.com/codex/skills/>
+[6] How to write a great agents.md: Lessons from over 2,500 repositories <https://github.blog/ai-and-ml/github-copilot/how-to-write-a-great-agents-md-lessons-from-over-2500-repositories/>
+[7] 7 Steps to Building AI Voice Agents with Brand Personality - Nurix AI <https://www.nurix.ai/blogs/build-ai-voice-agents-brand-personality>
+[8] Using AI for a strong brand voice: Dos and don'ts - Optimizely <https://www.optimizely.com/insights/blog/using-ai-for-brand-voice/>
+[9] How AI Agents Adapt Brand Voice for Communication Strategies <https://smallest.ai/blog/ai-agents-adapt-brand-voice-communication>
+[10] Skill authoring best practices - Claude API Docs <https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices>
