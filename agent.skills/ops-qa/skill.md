@@ -12,8 +12,8 @@ allowed-tools: ["run_command", "view_file"]
 ## Technical QA Checklist
 
 1. **Syntax Check**: Does the code look valid? Are brackets closed?
-2. **Platform Check**: Are commands compatible with the target OS (Mac Mini/Linux)?
-    - *Example*: Don't use `apt-get` on macOS (use `brew`).
+2. **Platform Check**: Are commands compatible with the target environment (Cloud/Linux)?
+    - *Example*: Use `vercel cli` or `flyctl` instead of local SSH if possible.
 3. **Safety Check**:
     - **Destructive Commands**: `rm -rf`, `DROP TABLE`, `pkill`. Are they necessary? Are they scoped correctly?
     - **Backup**: Is there a backup step before the destructive command?
