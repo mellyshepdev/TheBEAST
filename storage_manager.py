@@ -1,0 +1,113 @@
+import os
+import psutil
+import time
+import argparse
+import requests
+from datetime import datetime, timedelta
+
+# Configuration
+THRESHOLD_PERCENT = 85.0
+LARGE_FILE_SIZE_MB = 500
+OLD_FILE_DAYS = 30
+PROTECTED_DIRS = ["/etc", "/bin", "/usr", "/System32", ".git", ".vercel", "node_modules", "agent.skills"]
+N8N_UPLOAD_WEBHOOK = os.environ.get("N8N_UPLOAD_WEBHOOK", "http://localhost:5678/webhook/Beast-Cloud-Upload")
+
+def get_disk_usage(path="."):
+    usage = psutil.disk_usage(path)
+    return usage.percent, usage.free / (1024**3)
+
+def is_protected(path):
+    for protected in PROTECTED_DIRS:
+        if protected in path:
+            return True
+    return False
+
+def find_offload_candidates(directory, size_mb=LARGE_FILE_SIZE_MB, days=OLD_FILE_DAYS):
+    candidates = []
+    cutoff_date = datetime.now() - timedelta(days=days)
+    
+    for root, dirs, files in os.walk(directory):
+        if is_protected(root):
+            continue
+            
+        for name in files:
+            filepath = os.path.join(root, name)
+            try:
+                stat = os.stat(filepath)
+                size = stat.st_size / (1024**2)
+                mtime = datetime.fromtimestamp(stat.st_mtime)
+                
+                if size > size_mb or mtime < cutoff_date:
+                    candidates.append({
+                        "path": filepath,
+                        "size_mb": size,
+                        "last_modified": mtime
+                    })
+            except Exception as e:
+                pass
+                
+    return sorted(candidates, key=lambda x: x['size_mb'], reverse=True)
+
+def offload_file(candidate, provider="google"):
+    print(f"Offloading {candidate['path']} to {provider}...")
+    try:
+        # Note: In a production PSI, we would stream the file or send the path to n8n if n8n has local access.
+        # For now, we simulate the handshake.
+        payload = {
+            "path": candidate['path'],
+            "size_mb": candidate['size_mb'],
+            "provider": provider,
+            "beast_action": "offload"
+        }
+        response = requests.post(N8N_UPLOAD_WEBHOOK, json=payload, timeout=30)
+        
+        if response.status_code == 200:
+            print(f"Success! Cloud URL: {response.json().get('url')}")
+            # Verify integrity here if possible
+            # os.remove(candidate['path']) 
+            return True
+        else:
+            print(f"Failed to offload {candidate['path']}: {response.status_code}")
+            return False
+    except Exception as e:
+        print(f"Error during offload: {e}")
+        return False
+
+def main():
+    parser = argparse.ArgumentParser(description="The Beast Storage Manager")
+    parser.add_argument("--dry-run", action="store_true", help="Don't perform any actions, just list candidates")
+    parser.add_argument("--path", default=".", help="Base path to scan")
+    parser.add_argument("--execute", action="store_true", help="Perform actual offloading (Requires n8n)")
+    parser.add_argument("--provider", default="google", choices=["google", "onedrive"], help="Target cloud provider")
+    args = parser.parse_args()
+
+    percent, free_gb = get_disk_usage(args.path)
+    print(f"Current Disk Usage: {percent}% ({free_gb:.2f} GB free)")
+
+    if percent > THRESHOLD_PERCENT or args.dry_run:
+        print(f"Disk pressure detected (Threshold: {THRESHOLD_PERCENT}%)")
+        print("Scanning for offload candidates...")
+        candidates = find_offload_candidates(args.path)
+        
+        if not candidates:
+            print("No candidates found.")
+            return
+
+        print(f"Found {len(candidates)} candidates:")
+        for c in candidates[:10]:
+            print(f"- {c['path']} ({c['size_mb']:.2f} MB, Last Modified: {c['last_modified']})")
+
+        if args.execute:
+            print(f"\nProceeding with offload of {len(candidates)} files to {args.provider}...")
+            success_count = 0
+            for c in candidates:
+                if offload_file(c, provider=args.provider):
+                    success_count += 1
+            print(f"\nCompleted. Successfully offloaded {success_count}/{len(candidates)} files.")
+        elif args.dry_run:
+            print("\n[DRY RUN] Run with --execute to perform the move.")
+    else:
+        print("Disk space within healthy limits.")
+
+if __name__ == "__main__":
+    main()
