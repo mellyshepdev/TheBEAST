@@ -10,7 +10,8 @@ These workflow definitions are required for the `cloud-storage` and `storage-opt
 3.  **Filter**: New files since last run.
 4.  **Metadata Extract**: AI Agent node or Code node to extract tags/summaries.
 5.  **Supabase Node**: Upsert metadata into `public.cloud_files`.
-6.  **AnythingLLM Node**: Index file content in relevant workspace.
+6.  **AnythingLLM Node**: Index file content 
+in relevant workspace.
 
 ## 2. Beast-Cloud-Fetch (Referencing)
 **Trigger**: HTTP Request (from Agent)
