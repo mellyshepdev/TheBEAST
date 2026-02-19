@@ -35,3 +35,23 @@ in relevant workspace.
 1.  **Webhook Node**: Receives disk pressure stats.
 2.  **OpenClaw Node**: Route notification to User (Matrix/Slack/WhatsApp).
 3.  **Agent Logic**: "I'm running out of space. Here is my plan..."
+
+## 5. Beast-Content-Scout (Daily Pet Content Suggestions)
+**Trigger**: Cron (Daily at 8:00 AM) or HTTP Request (manual: "What should Blue do today?")
+**Nodes**:
+1.  **Execute Command Node**: Run `python trend_scout.py --save --json` to fetch trends via Perplexity and generate today's suggestion.
+2.  **Parse JSON Node**: Extract suggestion title, instructions, caption, hashtags, and timing.
+3.  **OpenClaw Node**: Send the daily suggestion to Georg via Matrix/WhatsApp/Slack with the full creative brief.
+4.  **Webhook Node (Wait)**: `Beast-Content-Upload` — waits for Georg to upload his photo/video after shooting.
+5.  **Execute Command Node**: Run `python content_poster.py --media [uploaded_file] --platform all --from-suggestion` to post with today's trending hashtags.
+6.  **OpenClaw Node**: Send confirmation with the live post link back to Georg.
+7.  **Supabase Node**: Log the post record (date, platform, hashtags, engagement baseline) to `public.content_posts`.
+
+## 6. Beast-SEO-Monitor (Daily SEO Health & Growth)
+**Trigger**: Cron (Daily at 7:00 AM) or HTTP Request (manual: "How's my SEO?")
+**Nodes**:
+1.  **Execute Command Node**: Run `python seo_monitor.py --save --json` to audit the site.
+2.  **Parse JSON Node**: Extract performance score, issues, and growth suggestions.
+3.  **OpenClaw Node**: Send the daily SEO briefing to Georg via Matrix/WhatsApp/Slack.
+4.  **Supabase Node**: Log the audit (date, performance score, issue count, top issues) to `public.seo_audits`.
+5.  **Conditional Node**: If performance score drops below 60, trigger a HIGH PRIORITY alert.
