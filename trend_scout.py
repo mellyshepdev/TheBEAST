@@ -22,6 +22,13 @@ import argparse
 import requests
 from datetime import datetime, date
 
+# Load .env file if python-dotenv is available
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass  # Falls back to system environment variables
+
 # ──────────────────────────────────────────────
 # Configuration
 # ──────────────────────────────────────────────
@@ -362,6 +369,7 @@ def main():
 
     if args.save or not args.dry_run:
         save_suggestion(suggestion, trend_data)
+
 
 
 if __name__ == "__main__":
