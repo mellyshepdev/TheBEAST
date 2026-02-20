@@ -1,0 +1,10 @@
+.git
+.vercel
+node_modules
+agent.skills
+OllamaSetup.exe
+*.exe
+*.zip
+*.log
+seo_reports
+content_suggestions
