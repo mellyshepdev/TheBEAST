@@ -22,6 +22,10 @@ import argparse
 import requests
 from datetime import datetime, date
 
+# Force UTF-8 output for Windows terminals to support emojis
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding='utf-8')
+
 # Load .env file if python-dotenv is available
 try:
     from dotenv import load_dotenv

@@ -1,4 +1,5 @@
 import os
+import shutil
 import psutil
 import time
 import argparse
@@ -48,7 +49,24 @@ def find_offload_candidates(directory, size_mb=LARGE_FILE_SIZE_MB, days=OLD_FILE
                 
     return sorted(candidates, key=lambda x: x['size_mb'], reverse=True)
 
-def offload_file(candidate, provider="google"):
+def offload_file(candidate, provider="google", target_dir=None):
+    if target_dir:
+        print(f"Moving {candidate['path']} to {target_dir}...")
+        try:
+            filename = os.path.basename(candidate['path'])
+            destination = os.path.join(target_dir, filename)
+            
+            # Ensure target directory exists
+            os.makedirs(target_dir, exist_ok=True)
+            
+            # Move file
+            shutil.move(candidate['path'], destination)
+            print(f"Success! Moved to: {destination}")
+            return True
+        except Exception as e:
+            print(f"Error moving file: {e}")
+            return False
+
     print(f"Offloading {candidate['path']} to {provider}...")
     try:
         # Note: In a production PSI, we would stream the file or send the path to n8n if n8n has local access.
@@ -79,6 +97,7 @@ def main():
     parser.add_argument("--path", default=".", help="Base path to scan")
     parser.add_argument("--execute", action="store_true", help="Perform actual offloading (Requires n8n)")
     parser.add_argument("--provider", default="google", choices=["google", "onedrive"], help="Target cloud provider")
+    parser.add_argument("--move-to", help="Directly move files to this local path (e.g. G:\\My Drive\\Offload)")
     args = parser.parse_args()
 
     percent, free_gb = get_disk_usage(args.path)
@@ -97,11 +116,12 @@ def main():
         for c in candidates[:10]:
             print(f"- {c['path']} ({c['size_mb']:.2f} MB, Last Modified: {c['last_modified']})")
 
-        if args.execute:
-            print(f"\nProceeding with offload of {len(candidates)} files to {args.provider}...")
+        if (args.execute or args.move_to) and not args.dry_run:
+            target_desc = args.move_to if args.move_to else args.provider
+            print(f"\nProceeding with offload of {len(candidates)} files to {target_desc}...")
             success_count = 0
             for c in candidates:
-                if offload_file(c, provider=args.provider):
+                if offload_file(c, provider=args.provider, target_dir=args.move_to):
                     success_count += 1
             print(f"\nCompleted. Successfully offloaded {success_count}/{len(candidates)} files.")
         elif args.dry_run:
