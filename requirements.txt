@@ -1,7 +1,10 @@
 psutil
 requests
 python-dotenv
-mcp
+mcp[cli]
 anthropic
 httpx
-uvicorn
+uvicorn[standard]
+fastapi
+pydantic
+aiohttp
