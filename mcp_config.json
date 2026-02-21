@@ -1,0 +1,252 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "C:\\Users\\Georg\\Projects\\TheBEAST"]
+    },
+    "git": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-git", "--repository", "C:\\Users\\Georg\\Projects\\TheBEAST"]
+    },
+    "brave-search": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+      "env": { "BRAVE_API_KEY": "YOUR_BRAVE_API_KEY" }
+    },
+    "netlify": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-netlify"],
+      "env": { "NETLIFY_AUTH_TOKEN": "YOUR_NETLIFY_TOKEN" }
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "YOUR_GITHUB_TOKEN" }
+    },
+    "gitlab": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-gitlab"],
+      "env": { "GITLAB_PERSONAL_ACCESS_TOKEN": "YOUR_GITLAB_TOKEN" }
+    },
+    "slack": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-slack"],
+      "env": { "SLACK_BOT_TOKEN": "YOUR_SLACK_TOKEN", "SLACK_TEAM_ID": "YOUR_TEAM_ID" }
+    },
+    "discord": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-discord"],
+      "env": { "DISCORD_BOT_TOKEN": "YOUR_DISCORD_TOKEN" }
+    },
+    "docker": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-docker"]
+    },
+    "sqlite": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sqlite", "--db", "C:\\Users\\Georg\\Projects\\TheBEAST\\beast.db"]
+    },
+    "postgres": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres", "postgresql://localhost/beast"]
+    },
+    "google-maps": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-google-maps"],
+      "env": { "GOOGLE_MAPS_API_KEY": "YOUR_MAPS_KEY" }
+    },
+    "puppeteer": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-puppeteer"]
+    },
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"]
+    },
+    "sequentialthinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequentialthinking"]
+    },
+    "wikipedia": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-wikipedia"]
+    },
+    "fetch": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-fetch"]
+    },
+    "time": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-time"]
+    },
+    "weather": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-weather"],
+      "env": { "OPENWEATHER_API_KEY": "YOUR_WEATHER_KEY" }
+    },
+    "linear": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-linear"],
+      "env": { "LINEAR_API_KEY": "YOUR_LINEAR_KEY" }
+    },
+    "sentry": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sentry"],
+      "env": { "SENTRY_AUTH_TOKEN": "YOUR_SENTRY_TOKEN" }
+    },
+    "giphy": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-giphy"],
+      "env": { "GIPHY_API_KEY": "YOUR_GIPHY_KEY" }
+    },
+    "everything": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-everything"]
+    },
+    "cognee": {
+      "command": "npx",
+      "args": ["-y", "@cognee/mcp-server"],
+      "env": { "COGNEE_API_KEY": "YOUR_COGNEE_KEY" }
+    },
+    "gpt-researcher": {
+      "command": "npx",
+      "args": ["-y", "gpt-researcher-mcp"],
+      "env": { "OPENAI_API_KEY": "YOUR_OPENAI_KEY" }
+    },
+    "archon": {
+      "command": "npx",
+      "args": ["-y", "@archon-inc/mcp-server"]
+    },
+    "drawio": {
+      "command": "npx",
+      "args": ["-y", "@drawio/mcp"]
+    },
+    "skill-seeker": {
+      "command": "npx",
+      "args": ["-y", "skill-seeker-mcp"]
+    },
+    "fonoster": {
+      "command": "npx",
+      "args": ["-y", "@fonoster/mcp-server"],
+      "env": { "FONOSTER_PROJECT_ID": "YOUR_PROJECT_ID" }
+    },
+    "ghidra": {
+      "command": "npx",
+      "args": ["-y", "ghidra-mcp"],
+      "env": { "GHIDRA_INSTALL_DIR": "C:\\Path\\To\\Ghidra" }
+    },
+    "browser-tools": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-browser-tools"]
+    },
+    "misp": {
+      "command": "npx",
+      "args": ["-y", "misp-mcp"],
+      "env": { "MISP_URL": "YOUR_MISP_URL", "MISP_API_KEY": "YOUR_MISP_KEY" }
+    },
+    "hexstrike": {
+      "command": "npx",
+      "args": ["-y", "hexstrike-mcp"]
+    },
+    "firecrawl": {
+      "command": "npx",
+      "args": ["-y", "firecrawl-mcp"],
+      "env": { "FIRECRAWL_API_KEY": "YOUR_FIRECRAWL_KEY" }
+    },
+    "magic": {
+      "command": "npx",
+      "args": ["-y", "@21st-dev/magic-mcp"]
+    },
+    "jira": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-atlassian"],
+      "env": { "ATLASSIAN_DOMAIN": "YOUR_DOMAIN", "ATLASSIAN_API_KEY": "YOUR_API_KEY" }
+    },
+    "windows-system": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-windows"]
+    },
+    "whatsapp": {
+      "command": "npx",
+      "args": ["-y", "whatsapp-mcp"],
+      "env": { "WHATSAPP_SESSION_ID": "YOUR_SESSION" }
+    },
+    "deep-research": {
+      "command": "npx",
+      "args": ["-y", "deep-research-mcp"]
+    },
+    "claude-context": {
+      "command": "npx",
+      "args": ["-y", "claude-context-mcp"]
+    },
+    "notebooklm": {
+      "command": "npx",
+      "args": ["-y", "notebooklm-mcp"]
+    },
+    "cloudflare": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-cloudflare"],
+      "env": { "CLOUDFLARE_API_TOKEN": "YOUR_TOKEN" }
+    },
+    "n8n": {
+      "command": "npx",
+      "args": ["-y", "n8n-mcp"],
+      "env": { "N8N_API_KEY": "YOUR_N8N_KEY", "N8N_URL": "YOUR_N8N_URL" }
+    },
+    "apple-system": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-apple"]
+    },
+    "supabase": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-supabase"],
+      "env": { "SUPABASE_URL": "YOUR_URL", "SUPABASE_KEY": "YOUR_ANON_KEY" }
+    },
+    "bible": {
+      "command": "npx",
+      "args": ["-y", "bible-mcp"]
+    },
+    "blender": {
+      "command": "npx",
+      "args": ["-y", "blender-mcp"],
+      "env": { "BLENDER_PATH": "C:\\Path\\To\\Blender.exe" }
+    },
+    "threedee": {
+      "command": "npx",
+      "args": ["-y", "threedee-mcp"]
+    },
+    "nmap": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-nmap"]
+    },
+    "kali": {
+      "command": "npx",
+      "args": ["-y", "kali-mcp"]
+    },
+    "perplexity": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-perplexity"],
+      "env": { "PERPLEXITY_API_KEY": "YOUR_PERPLEXITY_KEY" }
+    },
+    "gmail": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-gmail"],
+      "env": { "GMAIL_CLIENT_ID": "YOUR_GMAIL_ID", "GMAIL_CLIENT_SECRET": "YOUR_GMAIL_SECRET" }
+    },
+    "outlook": {
+      "command": "npx",
+      "args": ["-y", "@softeria/ms-365-mcp-server"],
+      "env": { "MS_365_CLIENT_ID": "YOUR_CLIENT_ID", "MS_365_CLIENT_SECRET": "YOUR_CLIENT_SECRET", "MS_365_TENANT_ID": "common" }
+    },
+    "matrix": {
+      "command": "npx",
+      "args": ["-y", "matrix-mcp-server"],
+      "env": {
+        "MATRIX_HOMESERVER_URL": "https://YOUR_DOMAIN.com",
+        "MATRIX_ACCESS_TOKEN": "YOUR_MATRIX_ACCESS_TOKEN",
+        "MATRIX_USER_ID": "@georgblackshepherd:YOUR_DOMAIN.com"
+      }
+    }
+  }
+}
+

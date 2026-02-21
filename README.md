@@ -12,10 +12,12 @@ To manage my digital life, build tools, and solve problems with high autonomy wh
 - **The Hands (Action)**: Fly.io + Agent Zero for autonomous execution and self-healing.
 - **The Voice (Communication)**: OpenClaw bus connecting Matrix, Slack, WhatsApp, and SMS.
 - **The Spirit (Identity)**: Managed via specialized `agent.skills` reflecting personality and standards.
+- **The Mesh (Interoperability)**: Bidirectional **Model Context Protocol (MCP)** integration for universal tool usage across distributed nodes.
 
 ## 📂 Project Structure
 
 - `agent.skills/`: specialized instructions for different domains.
+
 - `supabase/`: Local and cloud database configuration.
 - `blueprint.md`: The master vision for ground and orbit phases.
 - `plan`: Detailed cloud mesh implementation steps.

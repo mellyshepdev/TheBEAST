@@ -1,9 +1,20 @@
 from fastapi import FastAPI, BackgroundTasks
+from fastapi.middleware.cors import CORSMiddleware
 import os
 import subprocess
 import json
+import asyncio
 
 app = FastAPI(title="The Beast - Hands API")
+
+# Allow the portal chatbot to call this API from any origin (browser CORS)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],          # tighten to your domain in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Path to our scripts
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -37,6 +48,25 @@ async def run_storage(background_tasks: BackgroundTasks, execute: bool = False):
         cmd.append("--execute")
     background_tasks.add_task(subprocess.run, cmd)
     return {"message": f"Storage Manager started (execute={execute}) in background."}
+
+from mcp_coordinator import coordinator
+
+@app.on_event("startup")
+async def startup_event():
+    # Connect to configured MCP servers on startup
+    asyncio.create_task(coordinator.connect_all())
+
+@app.get("/mcp/tools")
+async def list_mcp_tools():
+    return await coordinator.list_tools()
+
+@app.post("/mcp/call")
+async def call_mcp_tool(request: dict):
+    server = request.get("server")
+    tool = request.get("tool")
+    arguments = request.get("arguments", {})
+    result = await coordinator.call_tool(server, tool, arguments)
+    return {"result": result}
 
 from tone_mirror import mirror
 

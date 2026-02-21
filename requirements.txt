@@ -1,3 +1,7 @@
 psutil
 requests
 python-dotenv
+mcp
+anthropic
+httpx
+uvicorn

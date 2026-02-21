@@ -37,6 +37,8 @@ def main():
     parser.add_argument("--chat", type=str, help="Chat with The Beast")
     parser.add_argument("--msg", type=str, help="Send message via OpenClaw")
     parser.add_argument("--channel", type=str, default="matrix", help="Channel for message")
+    parser.add_argument("--mcp-list", action="store_true", help="List tools from connected MCP servers")
+    parser.add_argument("--mcp-call", nargs=3, metavar=("SERVER", "TOOL", "ARGS_JSON"), help="Call an MCP tool")
 
     args = parser.parse_args()
 
@@ -46,7 +48,32 @@ def main():
         run_action("hands", "scout")
     elif args.seo:
         run_action("hands", "seo", url=args.seo)
+    elif args.mcp_list:
+        print("FETCHING MCP TOOLS...")
+        try:
+            resp = requests.get(f"{HANDS_URL}/mcp/tools")
+            tools = resp.json()
+            for server, tool_list in tools.items():
+                print(f"\n[{server.upper()}]")
+                for tool in tool_list:
+                    print(f"  - {tool['name']}: {tool['description']}")
+        except Exception as e:
+            print(f"FAILED TO FETCH TOOLS: {e}")
+    elif args.mcp_call:
+        server, tool, args_json = args.mcp_call
+        print(f"CALLING {tool} ON {server}...")
+        try:
+            payload = json.loads(args_json)
+            resp = requests.post(f"{HANDS_URL}/mcp/call", json={
+                "server": server,
+                "tool": tool,
+                "arguments": payload
+            })
+            print(f"RESULT: {resp.json()}")
+        except Exception as e:
+            print(f"FAILED TO CALL TOOL: {e}")
     elif args.chat:
+
         print("TALKING TO THE BEAST...")
         try:
             resp = requests.post(f"{HANDS_URL}/chat", json={"text": args.chat})
