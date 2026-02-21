@@ -37,3 +37,17 @@ async def run_storage(background_tasks: BackgroundTasks, execute: bool = False):
         cmd.append("--execute")
     background_tasks.add_task(subprocess.run, cmd)
     return {"message": f"Storage Manager started (execute={execute}) in background."}
+
+@app.post("/chat")
+async def beast_chat(message: dict):
+    user_msg = message.get("text", "").lower()
+    
+    # Simple logic for now, could be expanded with LLM
+    if "status" in user_msg:
+        response = "THE BEAST STATUS: ALL SYSTEMS GO. HANDS ARE READY."
+    elif "scout" in user_msg:
+        response = "TREND SCOUT IS ON STANDBY. USE /scout TO STRIKE."
+    else:
+        response = "I AM THE BEAST. I HEAR YOU. SYSTEM PARITY MAINTAINED."
+        
+    return {"reply": response}

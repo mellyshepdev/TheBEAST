@@ -1,0 +1,26 @@
+app = "beast-synapse"
+primary_region = "ams"
+
+[build]
+  image = "matrixdotorg/synapse:latest"
+
+[http_service]
+  internal_port = 8008
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+[[mounts]]
+  source = "synapse_data"
+  destination = "/data"
+
+[env]
+  SYNAPSE_SERVER_NAME = "matrix.theofficialblacksheepcompany.com"
+  SYNAPSE_REPORT_STATS = "yes"
+
+[[vm]]
+  memory = "1gb"
+  cpu_kind = "shared"
+  cpus = 1
