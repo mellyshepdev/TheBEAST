@@ -38,16 +38,22 @@ async def run_storage(background_tasks: BackgroundTasks, execute: bool = False):
     background_tasks.add_task(subprocess.run, cmd)
     return {"message": f"Storage Manager started (execute={execute}) in background."}
 
+from tone_mirror import mirror
+
 @app.post("/chat")
 async def beast_chat(message: dict):
-    user_msg = message.get("text", "").lower()
+    user_msg = message.get("text", "")
+    sentiment = mirror.analyze(user_msg)
+    prefix = mirror.get_response_style(sentiment)
     
-    # Simple logic for now, could be expanded with LLM
-    if "status" in user_msg:
-        response = "THE BEAST STATUS: ALL SYSTEMS GO. HANDS ARE READY."
-    elif "scout" in user_msg:
-        response = "TREND SCOUT IS ON STANDBY. USE /scout TO STRIKE."
+    user_msg_low = user_msg.lower()
+    
+    # Logic for status and actions
+    if "status" in user_msg_low:
+        response = f"{prefix}\nTHE BEAST STATUS: ALL SYSTEMS GO. HANDS ARE READY."
+    elif "scout" in user_msg_low:
+        response = f"{prefix}\nTREND SCOUT IS ON STANDBY. USE /scout TO STRIKE."
     else:
-        response = "I AM THE BEAST. I HEAR YOU. SYSTEM PARITY MAINTAINED."
+        response = f"{prefix}\nI AM THE BEAST. SYSTEM PARITY MAINTAINED."
         
-    return {"reply": response}
+    return {"reply": response, "sentiment": sentiment}
