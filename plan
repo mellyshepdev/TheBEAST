@@ -39,6 +39,7 @@ Use **Fly.io** and **n8n** for compute-heavy tasks and complex logic flows.
 
 Connect the Beast to your digital life via **OpenClaw** and messaging gateways.
 
+*   **OpenClaw Deep Dive:** A deep dive into the OpenClaw extension ecosystem, covering the 700+ Skills library, 12 major messaging platform integrations, and a guide to using the ClawHub skill store to help developers quickly build personalized AI assistants.
 *   **Multi-Channel:** Route all system notifications and user commands through **Matrix, WhatsApp, or Slack**.
 *   **Global Access:** The Cloud Mesh ensures the Beast reaches you via phone/web 24/7 without needing a local VPN or home IP.
 

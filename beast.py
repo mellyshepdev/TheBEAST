@@ -32,6 +32,8 @@ def run_action(target, action, **kwargs):
 def main():
     parser = argparse.ArgumentParser(description="THE BEAST - Universal CLI Control")
     parser.add_argument("--status", action="store_true", help="Check system health")
+    parser.add_argument("--health", action="store_true", help="Run self-healing diagnostics")
+    parser.add_argument("--loki", action="store_true", help="Run Loki Mode autonomous verification")
     parser.add_argument("--scout", action="store_true", help="Trigger Trend Scout")
     parser.add_argument("--seo", type=str, help="Trigger SEO Monitor for URL")
     parser.add_argument("--chat", type=str, help="Chat with The Beast")
@@ -44,6 +46,10 @@ def main():
 
     if args.status:
         get_status()
+    elif args.health:
+        run_action("hands", "health")
+    elif args.loki:
+        run_action("hands", "loki")
     elif args.scout:
         run_action("hands", "scout")
     elif args.seo:

@@ -21,7 +21,9 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SCRIPTS = {
     "scout": os.path.join(BASE_DIR, "trend_scout.py"),
     "seo": os.path.join(BASE_DIR, "seo_monitor.py"),
-    "storage": os.path.join(BASE_DIR, "storage_manager.py")
+    "storage": os.path.join(BASE_DIR, "storage_manager.py"),
+    "health": os.path.join(BASE_DIR, "self_healing.py"),
+    "loki": os.path.join(BASE_DIR, "loki_mode.py")
 }
 
 @app.get("/")
@@ -48,6 +50,16 @@ async def run_storage(background_tasks: BackgroundTasks, execute: bool = False):
         cmd.append("--execute")
     background_tasks.add_task(subprocess.run, cmd)
     return {"message": f"Storage Manager started (execute={execute}) in background."}
+
+@app.post("/health")
+async def run_health(background_tasks: BackgroundTasks):
+    background_tasks.add_task(subprocess.run, ["python", SCRIPTS["health"]])
+    return {"message": "System health check and self-healing cycle initiated."}
+
+@app.post("/loki")
+async def run_loki(background_tasks: BackgroundTasks):
+    background_tasks.add_task(subprocess.run, ["python", SCRIPTS["loki"]])
+    return {"message": "Loki Mode autonomous verification initiated."}
 
 from mcp_coordinator import coordinator
 

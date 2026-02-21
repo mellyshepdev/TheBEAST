@@ -1,0 +1,26 @@
+{
+    "timestamp": "2026-02-21T13:51:01.978550",
+    "status": "DEGRADED",
+    "checks": {
+        "GROUND": {
+            "status": "PASS",
+            "message": "All critical local scripts present."
+        },
+        "BRAIN": {
+            "status": "SKIP",
+            "message": "Supabase credentials not configured."
+        },
+        "HANDS": {
+            "status": "PASS",
+            "message": "Hands API live on Fly.io and diagnostics active."
+        },
+        "VOICE": {
+            "status": "FAIL",
+            "message": "OpenClaw unreachable: HTTPSConnectionPool(host='beast-openclaw.fly.dev', port=443): Read timed out. (read timeout=10)"
+        },
+        "BARCODE": {
+            "status": "PENDING",
+            "message": "Logic for barcode scanning pending implementation."
+        }
+    }
+}
