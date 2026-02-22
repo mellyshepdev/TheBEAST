@@ -3,6 +3,7 @@ from pydantic import BaseModel
 import httpx
 import os
 import logging
+from tone_mirror import mirror
 
 app = FastAPI(title="OpenClaw - The Voice of the Beast")
 
@@ -29,41 +30,54 @@ async def root():
 
 @app.post("/send")
 async def send_message(msg: Message, request: Request):
-    logger.info(f"Routing message to {msg.channel}: {msg.text[:50]}...")
+    # Inject Leon's Persona with Tone Mirroring
+    sentiment = mirror.analyze(msg.text)
+    style_guide = mirror.get_response_style(sentiment)
+    
+    leon_prefix = f"🧤 [LEON - {sentiment.upper()}]: "
+    if msg.priority == "high":
+        leon_prefix = "🚨 [SYSTEM CRITICAL - LEON]: "
+    
+    formatted_text = f"{leon_prefix}{msg.text}\n\n_{style_guide}_"
+    logger.info(f"Routing message to {msg.channel}: {formatted_text[:50]}...")
     
     url = GATEWAYS.get(msg.channel.lower())
     if not url:
         raise HTTPException(status_code=400, detail=f"Gateway for {msg.channel} not configured.")
 
-    # Extract optional auth from environment or header
     token = os.getenv(f"{msg.channel.upper()}_TOKEN")
     auth_header = {"Authorization": f"Bearer {token}"} if token else {}
 
     try:
         async with httpx.AsyncClient() as client:
             if msg.channel.lower() == "slack":
-                # Slack Webhook format
                 payload = {
-                    "text": f"*BEAST NOTIFICATION* [{msg.priority.upper()}]\n{msg.text}",
-                    "username": "THE BEAST",
-                    "icon_emoji": ":zap:"
+                    "text": f"*BEAST NOTIFICATION* [{msg.priority.upper()}]\n{formatted_text}",
+                    "username": "LEON AI - THE BEAST",
+                    "icon_emoji": ":robot_face:"
                 }
                 response = await client.post(url, json=payload)
             
             elif msg.channel.lower() == "matrix":
-                # Matrix Synapse Send Message API format
-                # Expects url to be: https://matrix.domain.com/_matrix/client/r0/rooms/!room:id/send/m.room.message
                 payload = {
                     "msgtype": "m.text",
-                    "body": msg.text,
+                    "body": formatted_text,
                     "format": "org.matrix.custom.html",
-                    "formatted_body": f"<strong>BEAST</strong>: {msg.text}"
+                    "formatted_body": f"<strong>LEON</strong>: {msg.text}"
                 }
                 response = await client.post(url, json=payload, headers=auth_header)
             
+            elif msg.channel.lower() == "whatsapp":
+                # Standard WhatsApp/n8n broadcast format
+                payload = {
+                    "message": formatted_text,
+                    "phone": msg.recipient or os.getenv("OWNER_PHONE"),
+                    "sender": "Leon AI"
+                }
+                response = await client.post(url, json=payload)
+            
             else:
-                # Fallback for others (WhatsApp/n8n hooks)
-                payload = {"message": msg.text, "sender": "The Beast"}
+                payload = {"message": formatted_text, "sender": "Leon AI"}
                 response = await client.post(url, json=payload)
                 
             response.raise_for_status()
@@ -72,6 +86,25 @@ async def send_message(msg: Message, request: Request):
     except Exception as e:
         logger.error(f"Failed to route message to {msg.channel}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Handshake failed: {str(e)}")
+
+@app.post("/broadcast")
+async def broadcast_message(msg: Message):
+    """Sends a message to ALL configured gateways."""
+    logger.info(f"Initiating Global Broadcast: {msg.text[:50]}...")
+    results = {}
+    
+    for channel in GATEWAYS.keys():
+        if GATEWAYS[channel]:
+            try:
+                # Reuse send_message logic internally or via helper
+                # For simplicity, we just iterate here
+                msg.channel = channel
+                res = await send_message(msg, None)
+                results[channel] = "sent"
+            except Exception as e:
+                results[channel] = f"failed: {str(e)}"
+    
+    return {"status": "broadcast_complete", "results": results}
 
 @app.get("/health")
 async def health():

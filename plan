@@ -9,9 +9,9 @@
 
 Initialize the project with **Anti-gravity Kit 2.0** and configure the cloud deployment pipeline.
 
-*   **Repository:** Primary workspace hosted on **GitHub** (or GitLab) with **GitHub Actions** for CI/CD.
-*   **CLI Setup:** Authenticate specialist agents with `supabase`, `vercel`, and `flyctl` CLIs.
-*   **AI Gateway:** Use **Portkey AI Gateway** or **Groq** for high-speed, low-latency reasoning fallback.
+* **Repository:** Primary workspace hosted on **GitHub** (or GitLab) with **GitHub Actions** for CI/CD.
+* **CLI Setup:** Authenticate specialist agents with `supabase`, `vercel`, and `flyctl` CLIs.
+* **AI Gateway:** Use **Portkey AI Gateway** or **Groq** for high-speed, low-latency reasoning fallback.
 
 ---
 
@@ -19,9 +19,9 @@ Initialize the project with **Anti-gravity Kit 2.0** and configure the cloud dep
 
 Leverage **Supabase** as the backbone for the system's identity and long-term memory.
 
-*   **Database:** Use **Supabase (PostgreSQL)** for structured data and identity management.
-*   **Vector Search:** Enable `pgvector` in Supabase to store and retrieve personal knowledge (PDFs, docs) indexed via **AnythingLLM** or custom RAG pipelines.
-*   **Edge Functions:** Deploy lightweight logic as **Supabase Edge Functions** (TypeScript) for low-latency triggers.
+* **Database:** Use **Supabase (PostgreSQL)** for structured data and identity management.
+* **Vector Search:** Enable `pgvector` in Supabase to store and retrieve personal knowledge (PDFs, docs) indexed via **AnythingLLM** or custom RAG pipelines.
+* **Edge Functions:** Deploy lightweight logic as **Supabase Edge Functions** (TypeScript) for low-latency triggers.
 
 ---
 
@@ -29,9 +29,9 @@ Leverage **Supabase** as the backbone for the system's identity and long-term me
 
 Use **Fly.io** and **n8n** for compute-heavy tasks and complex logic flows.
 
-*   **Compute (Fly.io):** Deploy **Agent Zero** or custom Dockerized agents to Fly.io for tasks requiring dedicated CPU/RAM or sustained terminal access.
-*   **Workflows (n8n):** Host **n8n** (Cloud or Fly.io) as the central nervous system to connect emails, calendars, and external APIs.
-*   **Self-Healing:** Implement GitHub Actions that monitor deployment logs and automatically trigger agent-led fixes if a build fails.
+* **Compute (Fly.io):** Deploy **Agent Zero** or custom Dockerized agents to Fly.io for tasks requiring dedicated CPU/RAM or sustained terminal access.
+* **Workflows (n8n):** Host **n8n** (Cloud or Fly.io) as the central nervous system to connect emails, calendars, and external APIs.
+* **Self-Healing:** Implement GitHub Actions that monitor deployment logs and automatically trigger agent-led fixes if a build fails.
 
 ---
 
@@ -39,9 +39,9 @@ Use **Fly.io** and **n8n** for compute-heavy tasks and complex logic flows.
 
 Connect the Beast to your digital life via **OpenClaw** and messaging gateways.
 
-*   **OpenClaw Deep Dive:** A deep dive into the OpenClaw extension ecosystem, covering the 700+ Skills library, 12 major messaging platform integrations, and a guide to using the ClawHub skill store to help developers quickly build personalized AI assistants.
-*   **Multi-Channel:** Route all system notifications and user commands through **Matrix, WhatsApp, or Slack**.
-*   **Global Access:** The Cloud Mesh ensures the Beast reaches you via phone/web 24/7 without needing a local VPN or home IP.
+* **OpenClaw Deep Dive:** A deep dive into the OpenClaw extension ecosystem, covering the 700+ Skills library, 12 major messaging platform integrations, and a guide to using the ClawHub skill store to help developers quickly build personalized AI assistants.
+* **Multi-Channel:** Route all system notifications and user commands through **Matrix, WhatsApp, or Slack**.
+* **Global Access:** The Cloud Mesh ensures the Beast reaches you via phone/web 24/7 without needing a local VPN or home IP.
 
 ---
 
@@ -49,16 +49,16 @@ Connect the Beast to your digital life via **OpenClaw** and messaging gateways.
 
 Universal standards managed via `.md` Skill files in the `agent.skills` directory.
 
-*   **Core Standards:** Defines the Beast's identity as a private, autonomous digital twin.
-*   **Ops Standards:** Rules for cloud deployment, security, and verification.
+* **Core Standards:** Defines the Beast's identity as a private, autonomous digital twin.
+* **Ops Standards:** Rules for cloud deployment, security, and verification.
 
 ---
 
 ### **Step 6: Control Plane & Verification**
 
-*   **UI:** Build the **Universal Control Plane** using **Flutter/Dart** or **Next.js**, hosted on **Vercel** or **Netlify**.
-*   **Observability:** Use **Axiom** or **Supabase Logs** to monitor the Beast's "thoughts" and actions in real-time.
-*   **Verification:** Run automated end-to-end tests via agents to verify the entire cloud stack connectivity.
+* **UI:** Build the **Universal Control Plane** using **Flutter/Dart** or **Next.js**, hosted on **Vercel** or **Netlify**.
+* **Observability:** Use **Axiom** or **Supabase Logs** to monitor the Beast's "thoughts" and actions in real-time.
+* **Verification:** Run automated end-to-end tests via agents to verify the entire cloud stack connectivity.
 
 ---
 

@@ -65,11 +65,20 @@ class SelfHealing:
 
     async def run_diagnostics(self):
         """Runs all health checks."""
-        await self.coordinator.connect_all()
+        try:
+            await self.coordinator.connect_all()
+        except Exception as e:
+            print(f"[WARN] MCP Coordinator failed to connect: {e}")
+            
         results = {}
         results["ssl"] = await self.check_ssl(MONITORED_DOMAIN)
         results["containers"] = await self.check_containers()
-        await self.coordinator.shutdown()
+        
+        try:
+            await self.coordinator.shutdown()
+        except:
+            pass
+            
         return results
 
 if __name__ == "__main__":

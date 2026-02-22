@@ -85,9 +85,21 @@ class LokiVerifier:
             self.log_check("VOICE", "FAIL", f"OpenClaw unreachable: {e}")
 
     def verify_barcode(self):
-        """Placeholder for Barcode integration verification."""
-        # Mentioned in blueprint, but no code found yet.
-        self.log_check("BARCODE", "PENDING", "Logic for barcode scanning pending implementation.")
+        """Verifies Barcode integration and local/remote handler."""
+        has_handler = os.path.exists("barcode_handler.py")
+        
+        try:
+            resp = requests.post(f"{FLY_HANDS_URL}/scan", timeout=10)
+            api_ready = resp.status_code == 200
+        except:
+            api_ready = False
+
+        if has_handler and api_ready:
+            self.log_check("BARCODE", "PASS", "Barcode logic integrated and endpoint active.")
+        elif has_handler:
+            self.log_check("BARCODE", "DEGRADED", "Handler present, but Hands API endpoint unreachable.")
+        else:
+            self.log_check("BARCODE", "FAIL", "Barcode handler script missing.")
 
     def run_all(self):
         print("\n🔥 [LOKI MODE] Initiating Autonomous Verification...")

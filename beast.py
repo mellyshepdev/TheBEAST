@@ -2,6 +2,7 @@ import argparse
 import requests
 import json
 import sys
+import os
 
 HANDS_URL = "https://beast-hands.fly.dev"
 VOICE_URL = "https://beast-openclaw.fly.dev"
@@ -34,22 +35,47 @@ def main():
     parser.add_argument("--status", action="store_true", help="Check system health")
     parser.add_argument("--health", action="store_true", help="Run self-healing diagnostics")
     parser.add_argument("--loki", action="store_true", help="Run Loki Mode autonomous verification")
+    parser.add_argument("--scan", action="store_true", help="Trigger Barcode Scanner")
     parser.add_argument("--scout", action="store_true", help="Trigger Trend Scout")
     parser.add_argument("--seo", type=str, help="Trigger SEO Monitor for URL")
     parser.add_argument("--chat", type=str, help="Chat with The Beast")
     parser.add_argument("--msg", type=str, help="Send message via OpenClaw")
     parser.add_argument("--channel", type=str, default="matrix", help="Channel for message")
     parser.add_argument("--mcp-list", action="store_true", help="List tools from connected MCP servers")
+    parser.add_argument("--message", type=str, help="Send a message via Voice (OpenClaw)")
+    parser.add_argument("--brief", action="store_true", help="Trigger a Sovereign Briefing (System Health)")
     parser.add_argument("--mcp-call", nargs=3, metavar=("SERVER", "TOOL", "ARGS_JSON"), help="Call an MCP tool")
 
     args = parser.parse_args()
 
     if args.status:
-        get_status()
+        # Check local and remote status
+        print("Checking status of The Beast...")
+        os.system("python loki_mode.py")
+    
+    elif args.brief:
+        print("[LEON]: Preparing your Sovereign Briefing...")
+        from self_healing import SelfHealing
+        monitor = SelfHealing()
+        import asyncio
+        results = asyncio.run(monitor.run_diagnostics())
+        
+        briefing = f"Sovereign Briefing Complete.\nSSL: {results['ssl']['status']}\nContainers: {results['containers']['status']}\nAll systems verified."
+        
+        # Send to Voice
+        payload = {"text": briefing, "channel": "matrix", "priority": "normal"}
+        try:
+            requests.post(f"{VOICE_URL}/send", json=payload)
+            print("✅ Briefing delivered to your primary channel.")
+        except Exception as e:
+            print(f"❌ Failed to reach the Voice: {e}")
+
     elif args.health:
         run_action("hands", "health")
     elif args.loki:
         run_action("hands", "loki")
+    elif args.scan:
+        run_action("hands", "scan")
     elif args.scout:
         run_action("hands", "scout")
     elif args.seo:

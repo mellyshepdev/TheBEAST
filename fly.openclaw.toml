@@ -1,6 +1,9 @@
 app = "beast-openclaw"
 primary_region = "ams"
 
+[build]
+  dockerfile = "Dockerfile.openclaw"
+
 [http_service]
   internal_port = 8080
   force_https = true

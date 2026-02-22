@@ -3,10 +3,11 @@ import re
 class ToneMirror:
     def __init__(self):
         self.sentiments = {
-            "upset": [r"bad", r"sad", r"angry", r"fuck", r"hate", r"upset", r"broke", r"fail"],
-            "upbeat": [r"good", r"great", r"awesome", r"happy", r"love", r"win", r"success", r"yes"],
-            "analytical": [r"how", r"why", r"data", r"research", r"analyze", r"code", r"science"],
-            "casual": [r"hey", r"yo", r"sup", r"joke", r"funny"]
+            "upset": [r"bad", r"sad", r"angry", r"fuck", r"hate", r"upset", r"broke", r"fail", r"error", r"down", r"crash"],
+            "upbeat": [r"good", r"great", r"awesome", r"happy", r"love", r"win", r"success", r"yes", r"done", r"fixed"],
+            "analytical": [r"how", r"why", r"data", r"research", r"analyze", r"code", r"science", r"log", r"audit", r"report"],
+            "casual": [r"hey", r"yo", r"sup", r"joke", r"funny", r"cool"],
+            "security": [r"login", r"auth", r"token", r"key", r"secret", r"access", r"security", r"shield", r"ghost"]
         }
 
     def analyze(self, text):
@@ -18,11 +19,12 @@ class ToneMirror:
 
     def get_response_style(self, sentiment):
         styles = {
-            "upset": "I understand. I'm here to help you fix this. Let's focus on the solution.",
-            "upbeat": "THATS WHAT I LIKE TO HEAR! LETS KEEP THIS MOMENTUM GOING!",
-            "analytical": "Acknowledged. I am processing the data points and optimizing for accuracy.",
-            "casual": "System parity maintained. Ready for the next strike. That's what she said.",
-            "relaxed": "I am The Beast. I hear you. Standing by."
+            "upset": "I understand. I'm already calculating the resolution. We don't tolerate degradation. Stand by.",
+            "upbeat": "EXCELLENT. Momentum is the fuel of empires. Let's keep the baseline high!",
+            "analytical": "Acknowledged. Data points ingested. I am optimizing the logic branches as we speak.",
+            "casual": "System parity maintained. Ready for the next strike. Let's get it.",
+            "security": "GHOST PROTOCOL: Security vectors verified. Your secrets are locked in the mesh.",
+            "relaxed": "I am Leon. The Beast is breathing. Standing by for your next command."
         }
         return styles.get(sentiment, styles["relaxed"])
 
