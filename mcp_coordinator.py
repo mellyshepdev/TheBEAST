@@ -27,18 +27,25 @@ class MCPCoordinator:
 
     async def connect_all(self):
         await self.load_config()
+        
+        # Skip MCP connections if in a restricted container environment like Fly.io
+        # unless explicitly required (since local paths/binaries won't exist)
+        if os.getenv("FLY_APP_NAME"):
+            print("[MCP] Cloud environment detected. Skipping local MCP connections.")
+            return
+
         for name, params in self.server_params.items():
             print(f"[MCP] Connecting to {name}...")
-            # Note: In a real implementation with many servers, we'd manage lifecycles more robustly
-            # For now, we'll store the context managers and sessions
-            transport_ctx = stdio_client(params)
-            # This is simplified for the beast's use case
-            read, write = await transport_ctx.__aenter__()
-            session = ClientSession(read, write)
-            await session.__aenter__()
-            await session.initialize()
-            self.sessions[name] = session
-            print(f"[MCP] {name} connected.")
+            try:
+                transport_ctx = stdio_client(params)
+                read, write = await transport_ctx.__aenter__()
+                session = ClientSession(read, write)
+                await session.__aenter__()
+                await session.initialize()
+                self.sessions[name] = session
+                print(f"[MCP] {name} connected.")
+            except Exception as e:
+                print(f"[WARN] Failed to connect to MCP server {name}: {e}")
 
     async def list_tools(self) -> Dict[str, List[Any]]:
         all_tools = {}

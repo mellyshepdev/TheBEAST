@@ -1,6 +1,6 @@
 {
-    "timestamp": "2026-02-24T07:36:35.087398",
-    "status": "DEGRADED",
+    "timestamp": "2026-02-24T07:43:03.957034",
+    "status": "COMPLETE",
     "checks": {
         "GROUND": {
             "status": "PASS",
@@ -11,8 +11,8 @@
             "message": "Supabase reachable and schema verified."
         },
         "HANDS": {
-            "status": "FAIL",
-            "message": "Hands API returned: 405"
+            "status": "PASS",
+            "message": "Hands API live on Fly.io and diagnostics active."
         },
         "VOICE": {
             "status": "PASS",
