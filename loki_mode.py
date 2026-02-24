@@ -65,7 +65,7 @@ class LokiVerifier:
     def verify_hands(self):
         """Verifies Fly.io Hands API and self-healing endpoint."""
         try:
-            resp = requests.post(f"{FLY_HANDS_URL}/health", timeout=10)
+            resp = requests.get(f"{FLY_HANDS_URL}/health", timeout=10)
             if resp.status_code == 200:
                 self.log_check("HANDS", "PASS", "Hands API live on Fly.io and diagnostics active.")
             else:

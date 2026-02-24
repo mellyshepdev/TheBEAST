@@ -1,0 +1,32 @@
+version: "1.0"
+name: "Bible-Study-Feature-Crew"
+description: "Multi-agent flow for Supabase-backed Bible Study reports."
+
+# THE BRAIN: Manages the 'Big Picture'
+orchestrator:
+  agent: "duo-planner"
+  instructions: |
+    Lead the development of a 'Comments' section for the Bible Study Reports tab.
+    Ensure the frontend talks to our Supabase project.
+
+# THE WORKERS: These run at the same time
+sub_agents:
+  - name: "Frontend_Specialist"
+    capability: "react_vue_development"
+    instructions: |
+      1. Edit the 'Reports' tab UI.
+      2. Add a comment section at the bottom.
+      3. Use the Supabase client library to 'POST' and 'GET' comments.
+
+  - name: "Supabase_Architect"
+    capability: "database_management"
+    instructions: |
+      1. Define the 'bible_comments' table schema for Supabase.
+      2. Columns needed: id (uuid), created_at (timestamp), report_id (int), user_name (text), comment_body (text).
+      3. Enable Row Level Security (RLS) so only authenticated users can post.
+
+  - name: "Theologian_Reviewer"
+    capability: "content_moderation"
+    instructions: |
+      1. Check UI text for Bible Study appropriateness.
+      2. Ensure placeholders use encouraging language (e.g., "Share your reflections here...").

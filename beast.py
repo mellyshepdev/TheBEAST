@@ -71,7 +71,13 @@ def main():
             print(f"❌ Failed to reach the Voice: {e}")
 
     elif args.health:
-        run_action("hands", "health")
+        print("RUNNING SYSTEM DIAGNOSTICS...")
+        try:
+            resp = requests.get(f"{HANDS_URL}/health")
+            data = resp.json()
+            print(json.dumps(data, indent=2))
+        except Exception as e:
+            print(f"FAILED TO FETCH HEALTH: {e}")
     elif args.loki:
         run_action("hands", "loki")
     elif args.scan:
@@ -105,12 +111,25 @@ def main():
         except Exception as e:
             print(f"FAILED TO CALL TOOL: {e}")
     elif args.chat:
-
-        print("TALKING TO THE BEAST...")
+        print("\n--- INITIATING COMMS WITH THE BEAST ---")
         try:
             resp = requests.post(f"{HANDS_URL}/chat", json={"text": args.chat})
             data = resp.json()
-            print(f"[{data.get('sentiment', 'RELAXED').upper()}] {data.get('reply')}")
+            sentiment = data.get('sentiment', 'relaxed').upper()
+            reply = data.get('reply', '...')
+            
+            # Simple status prefixes (avoiding Unicode emojis for Windows terminal safety)
+            prefixes = {
+                "UPSET": "[CRITICAL]",
+                "UPBEAT": "[VICTORY]",
+                "ANALYTICAL": "[RECON]",
+                "CASUAL": "[STATUS]",
+                "SECURITY": "[SHIELD]",
+                "RELAXED": "[IDLE]"
+            }
+            prefix = prefixes.get(sentiment, "[INFO]")
+            
+            print(f"\n{prefix} {reply}\n")
         except Exception as e:
             print(f"FAILED TO CHAT: {e}")
     elif args.msg:

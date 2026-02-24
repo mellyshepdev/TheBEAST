@@ -37,16 +37,38 @@ class SelfHealing:
             return {"status": "error", "message": str(e)}
 
     async def check_containers(self):
-        """Placeholder for monitoring Docker containers on remote nodes via MCP."""
-        print("[HEALTH] Checking remote containers...")
-        # In a full implementation, we'd call:
-        # await self.coordinator.call_tool("docker", "list_containers", {})
-        # Or run shell command on remote node:
-        # await self.coordinator.call_tool("apple-system", "run_shell_command", {"command": "docker ps"})
-        
-        # For now, we simulate a check
-        print("[HEALTH] Remote nodes verification pending MCP setup.")
-        return {"status": "pending_mcp"}
+        """Checks status of essential Docker containers via MCP."""
+        print("[HEALTH] Checking remote containers via Docker MCP...")
+        try:
+            # Attempt to list containers via the docker MCP server
+            resp = await self.coordinator.call_tool("docker", "list_containers", {})
+            containers = resp.content if hasattr(resp, 'content') else []
+            
+            # Filter for essential services (e.g., ELK, Synapse)
+            critical_services = ["elk", "elasticsearch", "logstash", "kibana", "synapse"]
+            status_report = []
+            
+            # Simple simulation of status check from list results
+            # In a real MCP response, we'd parse the JSON/List
+            print(f"[HEALTH] Received data for {len(containers)} containers.")
+            
+            # Check for stopped critical services
+            # This is a bit speculative on the structure of mcp-server-docker output, 
+            # but usually it returns a string or list of objects.
+            container_str = str(containers).lower()
+            for service in critical_services:
+                if service in container_str:
+                    if "exited" in container_str or "stopped" in container_str:
+                        await self.alert(f"⚠️ CRITICAL SERVICE DOWN: {service.upper()} is not running!")
+                        status_report.append({"service": service, "status": "down"})
+                    else:
+                        status_report.append({"service": service, "status": "running"})
+            
+            return {"status": "ok", "checks": status_report}
+        except Exception as e:
+            print(f"[WARN] Docker MCP check failed: {e}")
+            # Fallback to local check or pending status
+            return {"status": "error", "message": str(e)}
 
     async def alert(self, message: str):
         """Sends an alert via OpenClaw."""

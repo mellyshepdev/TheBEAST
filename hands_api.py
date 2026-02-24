@@ -5,6 +5,10 @@ import subprocess
 import json
 import asyncio
 import httpx
+from self_healing import SelfHealing
+from tone_mirror import ToneMirror
+
+mirror = ToneMirror()
 
 app = FastAPI(title="The Beast - Hands API")
 
@@ -114,7 +118,7 @@ def is_code_request(text: str) -> bool:
 async def root():
     return {"status": "online", "message": "The Beast Hands are ready to strike."}
 
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "POST"])
 async def health_check():
     ollama_alive = False
     try:
@@ -123,11 +127,17 @@ async def health_check():
             ollama_alive = r.status_code == 200
     except:
         pass
+    
+    # Run core diagnostics
+    monitor = SelfHealing()
+    diag_results = await monitor.run_diagnostics()
+    
     return {
         "status": "online",
         "ollama": "🟢 connected" if ollama_alive else "🔴 offline",
         "model": OLLAMA_MODEL,
-        "openai_fallback": "enabled" if OPENAI_KEY else "disabled"
+        "openai_fallback": "enabled" if OPENAI_KEY else "disabled",
+        "diagnostics": diag_results
     }
 
 @app.get("/models")
@@ -178,8 +188,18 @@ async def beast_chat(message: dict):
 
     # ── LLM-powered response for code + general questions ──
     else:
+        sentiment = mirror.analyze(user_msg)
+        style_prefix = mirror.get_response_style(sentiment)
+        
         reply = await llm(user_msg)
-        return {"reply": reply, "mode": "llm", "model": OLLAMA_MODEL}
+        full_reply = f"{style_prefix}\n\n{reply}"
+        
+        return {
+            "reply": full_reply, 
+            "mode": "llm", 
+            "model": OLLAMA_MODEL,
+            "sentiment": sentiment
+        }
 
 @app.post("/code")
 async def generate_code(request: dict):
@@ -226,6 +246,24 @@ async def run_loki(background_tasks: BackgroundTasks):
 async def run_scan(background_tasks: BackgroundTasks):
     background_tasks.add_task(subprocess.run, ["python", SCRIPTS["scan"]])
     return {"message": "Barcode scanning procedure initiated."}
+
+@app.post("/authorize")
+async def strike_authorize(request: dict):
+    """
+    Control Plane Strike Authorization endpoint.
+    Used for high-risk actions requiring the 'Always Ask' gate.
+    """
+    action = request.get("action")
+    authorized = request.get("authorized", False)
+    payload = request.get("payload", {})
+    
+    if authorized:
+        print(f"[AUTH] STRIKE AUTHORIZED: {action}")
+        # Here we would trigger the specific background task
+        return {"status": "authorized", "action": action, "message": f"Striking {action} now."}
+    else:
+        print(f"[AUTH] STRIKE DENIED: {action}")
+        return {"status": "denied", "action": action, "message": "Authorization withheld."}
 
 try:
     from mcp_coordinator import coordinator

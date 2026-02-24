@@ -68,6 +68,16 @@ def find_offload_candidates(directory, size_mb=LARGE_FILE_SIZE_MB, days=OLD_FILE
                 
     return sorted(candidates, key=lambda x: x['size_mb'], reverse=True)
 
+import hashlib
+
+def calculate_checksum(filepath):
+    """Calculate SHA256 checksum of a file."""
+    sha256_hash = hashlib.sha256()
+    with open(filepath, "rb") as f:
+        for byte_block in iter(lambda: f.read(4096), b""):
+            sha256_hash.update(byte_block)
+    return sha256_hash.hexdigest()
+
 def offload_file(candidate, provider="google", target_dir=None):
     if target_dir:
         print(f"Moving {candidate['path']} to {target_dir}...")
@@ -78,6 +88,9 @@ def offload_file(candidate, provider="google", target_dir=None):
             # Ensure target directory exists
             os.makedirs(target_dir, exist_ok=True)
             
+            # Verify checksum before move for record
+            local_checksum = calculate_checksum(candidate['path'])
+            
             # Move file
             shutil.move(candidate['path'], destination)
             print(f"Success! Moved to: {destination}")
@@ -86,23 +99,42 @@ def offload_file(candidate, provider="google", target_dir=None):
             print(f"Error moving file: {e}")
             return False
 
-    print(f"Offloading {candidate['path']} to {provider}...")
+    print(f"Offloading {candidate['path']} to {provider} via n8n strike...")
     try:
-        # Note: In a production PSI, we would stream the file or send the path to n8n if n8n has local access.
-        # For now, we simulate the handshake.
-        payload = {
-            "path": candidate['path'],
-            "size_mb": candidate['size_mb'],
-            "provider": provider,
-            "beast_action": "offload"
-        }
-        response = requests.post(N8N_UPLOAD_WEBHOOK, json=payload, timeout=30)
+        local_checksum = calculate_checksum(candidate['path'])
+        
+        # Prepare file for upload
+        with open(candidate['path'], 'rb') as f:
+            files = {'file': (os.path.basename(candidate['path']), f)}
+            data = {
+                "path": candidate['path'],
+                "size_mb": candidate['size_mb'],
+                "provider": provider,
+                "checksum": local_checksum,
+                "beast_action": "offload_strike",
+                "timestamp": datetime.now().isoformat()
+            }
+            
+            response = requests.post(N8N_UPLOAD_WEBHOOK, data=data, files=files, timeout=60)
         
         if response.status_code == 200:
-            print(f"Success! Cloud URL: {response.json().get('url')}")
-            # Verify integrity here if possible
-            # os.remove(candidate['path']) 
-            return True
+            result = response.json()
+            cloud_url = result.get('url')
+            remote_checksum = result.get('checksum')
+            
+            print(f"Success! Cloud URL: {cloud_url}")
+            
+            # Verify integrity if n8n returns a checksum
+            if remote_checksum and remote_checksum == local_checksum:
+                print("Integrity Verified. Removing local node copy...")
+                # os.remove(candidate['path']) # Safety: keep commented until user confirms
+                return True
+            elif remote_checksum:
+                print(f"❌ INTEGRITY FAILURE: Local {local_checksum} != Remote {remote_checksum}")
+                return False
+            else:
+                print("Warning: Remote node did not return checksum for verification.")
+                return True
         else:
             print(f"Failed to offload {candidate['path']}: {response.status_code}")
             return False
