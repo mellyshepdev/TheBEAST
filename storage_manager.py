@@ -12,6 +12,25 @@ LARGE_FILE_SIZE_MB = 500
 OLD_FILE_DAYS = 30
 PROTECTED_DIRS = ["/etc", "/bin", "/usr", "/System32", ".git", ".vercel", "node_modules", "agent.skills"]
 N8N_UPLOAD_WEBHOOK = os.environ.get("N8N_UPLOAD_WEBHOOK", "http://localhost:5678/webhook/Beast-Cloud-Upload")
+N8N_ALERT_WEBHOOK = os.environ.get("N8N_ALERT_WEBHOOK", "http://localhost:5678/webhook/Beast-Disk-Alert")
+
+def send_n8n_alert(percent, free_gb, candidates):
+    """Send a disk pressure alert to n8n."""
+    print(f"Sending disk alert to n8n...")
+    try:
+        payload = {
+            "percent": percent,
+            "free_gb": free_gb,
+            "candidate_count": len(candidates),
+            "top_candidates": [c['path'] for c in candidates[:5]],
+            "beast_action": "disk_alert",
+            "timestamp": datetime.now().isoformat()
+        }
+        response = requests.post(N8N_ALERT_WEBHOOK, json=payload, timeout=10)
+        return response.status_code == 200
+    except Exception as e:
+        print(f"Failed to send n8n alert: {e}")
+        return False
 
 def get_disk_usage(path="."):
     usage = psutil.disk_usage(path)
@@ -107,6 +126,10 @@ def main():
         print(f"Disk pressure detected (Threshold: {THRESHOLD_PERCENT}%)")
         print("Scanning for offload candidates...")
         candidates = find_offload_candidates(args.path)
+        
+        # Trigger n8n alert
+        if not args.dry_run:
+            send_n8n_alert(percent, free_gb, candidates)
         
         if not candidates:
             print("No candidates found.")

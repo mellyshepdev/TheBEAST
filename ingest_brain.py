@@ -18,6 +18,24 @@ except ImportError:
 # Configuration
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+ANYTHING_LLM_API_KEY = os.environ.get("ANYTHING_LLM_API_KEY", "")
+ANYTHING_LLM_URL = os.environ.get("ANYTHING_LLM_URL", "http://localhost:3001/api/v1")
+N8N_INGEST_WEBHOOK = os.environ.get("N8N_INGEST_WEBHOOK", "http://localhost:5678/webhook/Beast-Cloud-Ingest")
+
+def send_to_n8n(file_data):
+    """Notify n8n of a new ingested file."""
+    print(f"Notifying n8n of ingestion: {file_data.get('path')}...")
+    try:
+        payload = {
+            "file": file_data,
+            "beast_action": "brain_ingest",
+            "timestamp": datetime.now().isoformat()
+        }
+        response = requests.post(N8N_INGEST_WEBHOOK, json=payload, timeout=20)
+        return response.status_code == 200
+    except Exception as e:
+        print(f"Failed to notify n8n: {e}")
+        return False
 PROTECTED_DIRS = [".git", ".vercel", "node_modules", "agent.skills", "__pycache__", ".agent", ".idx"]
 TEXT_EXTENSIONS = [".txt", ".md", ".py", ".html", ".css", ".js", ".json", ".toml", ".yml", ".yaml"]
 

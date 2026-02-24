@@ -32,6 +32,7 @@ PERPLEXITY_API_KEY = os.environ.get("PERPLEXITY_API_KEY", "")
 PERPLEXITY_API_URL = "https://api.perplexity.ai/chat/completions"
 PAGESPEED_API_KEY = os.environ.get("PAGESPEED_API_KEY", "")
 PAGESPEED_API_URL = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed"
+N8N_SEO_WEBHOOK = os.environ.get("N8N_SEO_WEBHOOK", "http://localhost:5678/webhook/Beast-SEO-Monitor")
 
 DEFAULT_URL = "https://theofficialblacksheepcompany.com"
 OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "seo_reports")
@@ -431,6 +432,22 @@ def save_report(audit_data):
     return filepath
 
 
+def send_to_n8n(audit_data):
+    """Send the SEO audit data to n8n."""
+    print(f"Sending SEO report to n8n...")
+    try:
+        payload = {
+            "date": date.today().isoformat(),
+            "audit": audit_data,
+            "beast_action": "seo_monitor"
+        }
+        response = requests.post(N8N_SEO_WEBHOOK, json=payload, timeout=20)
+        return response.status_code == 200
+    except Exception as e:
+        print(f"Failed to send to n8n: {e}")
+        return False
+
+
 # ──────────────────────────────────────────────
 # Main
 # ──────────────────────────────────────────────
@@ -441,6 +458,7 @@ def main():
     parser.add_argument("--dry-run", action="store_true", help="Simulate with mock data")
     parser.add_argument("--save", action="store_true", help="Save report to JSON")
     parser.add_argument("--json", action="store_true", help="Output raw JSON")
+    parser.add_argument("--webhook", action="store_true", help="Send report to n8n webhook")
     args = parser.parse_args()
 
     print("\n The Beast SEO Monitor initializing...")
@@ -474,6 +492,9 @@ def main():
 
     if args.save or not args.dry_run:
         save_report(audit_data)
+
+    if args.webhook:
+        send_to_n8n(audit_data)
 
 
 if __name__ == "__main__":

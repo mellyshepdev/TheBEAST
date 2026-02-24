@@ -39,6 +39,7 @@ except ImportError:
 
 PERPLEXITY_API_KEY = os.environ.get("PERPLEXITY_API_KEY", "")
 PERPLEXITY_API_URL = "https://api.perplexity.ai/chat/completions"
+N8N_TREND_WEBHOOK = os.environ.get("N8N_TREND_WEBHOOK", "http://localhost:5678/webhook/Beast-Content-Scout")
 
 BLUE_PROFILE = {
     "name": "Blue",
@@ -342,6 +343,23 @@ def save_suggestion(suggestion, trend_data=None):
     return filepath
 
 
+def send_to_n8n(suggestion, trend_data):
+    """Send the content suggestion to n8n."""
+    print(f"Sending content suggestion to n8n...")
+    try:
+        payload = {
+            "date": date.today().isoformat(),
+            "suggestion": suggestion,
+            "trend_data": trend_data,
+            "beast_action": "content_scout"
+        }
+        response = requests.post(N8N_TREND_WEBHOOK, json=payload, timeout=20)
+        return response.status_code == 200
+    except Exception as e:
+        print(f"Failed to send to n8n: {e}")
+        return False
+
+
 # ──────────────────────────────────────────────
 # Main
 # ──────────────────────────────────────────────
@@ -351,6 +369,7 @@ def main():
     parser.add_argument("--dry-run", action="store_true", help="Simulate with mock data (no API calls)")
     parser.add_argument("--save", action="store_true", help="Save suggestion to JSON file")
     parser.add_argument("--json", action="store_true", help="Output raw JSON instead of formatted text")
+    parser.add_argument("--webhook", action="store_true", help="Send suggestion to n8n webhook")
     args = parser.parse_args()
 
     print("\n🐾 The Beast Content Scout initializing...")
@@ -373,6 +392,9 @@ def main():
 
     if args.save or not args.dry_run:
         save_suggestion(suggestion, trend_data)
+        
+    if args.webhook:
+        send_to_n8n(suggestion, trend_data)
 
 
 
