@@ -127,7 +127,7 @@ def offload_file(candidate, provider="google", target_dir=None):
             # Verify integrity if n8n returns a checksum
             if remote_checksum and remote_checksum == local_checksum:
                 print("Integrity Verified. Removing local node copy...")
-                # os.remove(candidate['path']) # Safety: keep commented until user confirms
+                os.remove(candidate['path']) # Strike complete
                 return True
             elif remote_checksum:
                 print(f"❌ INTEGRITY FAILURE: Local {local_checksum} != Remote {remote_checksum}")

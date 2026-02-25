@@ -31,14 +31,15 @@ async def root():
 @app.post("/send")
 async def send_message(msg: Message, request: Request):
     # Inject Leon's Persona with Tone Mirroring
-    sentiment = mirror.analyze(msg.text)
-    style_guide = mirror.get_response_style(sentiment)
+    sentiment, intensity = mirror.analyze(msg.text)
+    style_instruction = mirror.get_style_instruction(sentiment, intensity)
     
     leon_prefix = f"🧤 [LEON - {sentiment.upper()}]: "
     if msg.priority == "high":
         leon_prefix = "🚨 [SYSTEM CRITICAL - LEON]: "
     
-    formatted_text = f"{leon_prefix}{msg.text}\n\n_{style_guide}_"
+    # In OpenClaw, we use the style_instruction as a footer for system-generated messages
+    formatted_text = f"{leon_prefix}{msg.text}\n\n_{style_instruction}_"
     logger.info(f"Routing message to {msg.channel}: {formatted_text[:50]}...")
     
     url = GATEWAYS.get(msg.channel.lower())
@@ -105,6 +106,27 @@ async def broadcast_message(msg: Message):
                 results[channel] = f"failed: {str(e)}"
     
     return {"status": "broadcast_complete", "results": results}
+
+@app.post("/slack/webhook")
+async def slack_webhook(request: Request):
+    """Handles incoming Slack events/messages."""
+    form_data = await request.form()
+    # Slack slash commands send data as form-urlencoded
+    user_text = form_data.get("text", "")
+    user_id = form_data.get("user_id", "unknown")
+    
+    logger.info(f"Received Slack command from {user_id}: {user_text}")
+    
+    # Forward to Hands API (Leon's brain)
+    HANDS_URL = os.getenv("HANDS_URL", "http://localhost:8000")
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(f"{HANDS_URL}/chat", json={"text": user_text})
+            data = resp.json()
+            return {"text": data.get("reply", "Leon is processing...")}
+    except Exception as e:
+        logger.error(f"Failed to reach Hands API: {e}")
+        return {"text": "⚠️ Communication with Leon's core is offline."}
 
 @app.get("/health")
 async def health():

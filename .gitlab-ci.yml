@@ -16,9 +16,13 @@
 # This specific template is located at:
 # https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Getting-Started.gitlab-ci.yml
 
+include:
+  - template: Jobs/SAST.gitlab-ci.yml
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
+
 stages:          # List of stages for jobs, and their order of execution
-  - build
   - test
+  - build
   - deploy
 
 build-job:       # This job runs in the build stage, which runs first.

@@ -45,8 +45,15 @@ def main():
     parser.add_argument("--message", type=str, help="Send a message via Voice (OpenClaw)")
     parser.add_argument("--brief", action="store_true", help="Trigger a Sovereign Briefing (System Health)")
     parser.add_argument("--mcp-call", nargs=3, metavar=("SERVER", "TOOL", "ARGS_JSON"), help="Call an MCP tool")
+    parser.add_argument("--local", action="store_true", help="Talk to local Beast (localhost:8000)")
 
     args = parser.parse_args()
+
+    global HANDS_URL, VOICE_URL
+    if args.local:
+        HANDS_URL = "http://localhost:8000"
+        VOICE_URL = "http://localhost:8001" # Assuming Voice runs on 8001 if local
+        print("OVERRIDING TO LOCAL NODES: localhost:8000/8001")
 
     if args.status:
         # Check local and remote status

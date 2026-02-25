@@ -106,9 +106,19 @@ class BrainIngester:
             # payload["user_id"] = "YOUR_STUB_USER_ID" 
 
             print(f"[LIVE] Ingesting: {os.path.basename(filepath)}...")
-            # Uncomment below once SUPABASE_URL and SUPABASE_KEY are real and user_id is handled
-            # resp = requests.post(self.api_url, headers=self.headers, json=payload)
-            # resp.raise_for_status()
+            
+            # Use Service Role Key to bypass RLS for initial ingestion
+            headers = {**self.headers, "Authorization": f"Bearer {os.environ.get('SUPABASE_SERVICE_ROLE_KEY')}"}
+            
+            resp = requests.post(self.api_url, headers=headers, json=payload)
+            resp.raise_for_status()
+            
+            # ── AnythingLLM Integration ──────────────────────────────────────────
+            if ANYTHING_LLM_API_KEY:
+                print(f"🧠 [VECTOR] Indexing {os.path.basename(filepath)} in AnythingLLM...")
+                # Stub for AnythingLLM indexing - would typically involve uploading the file/text
+                # to their workspace threads or document process.
+                # requests.post(f"{ANYTHING_LLM_URL}/document/process", headers={"Authorization": f"Bearer {ANYTHING_LLM_API_KEY}"}, json=payload)
 
         except Exception as e:
             print(f"[ERROR] Failed to process {filepath}: {e}")

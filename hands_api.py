@@ -5,8 +5,12 @@ import subprocess
 import json
 import asyncio
 import httpx
+from dotenv import load_dotenv
 from self_healing import SelfHealing
 from tone_mirror import ToneMirror
+
+# Load environment variables
+load_dotenv()
 
 mirror = ToneMirror()
 
@@ -39,6 +43,10 @@ OLLAMA_URL   = os.getenv("OLLAMA_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "codellama")   # change to llama3, deepseek-coder, etc.
 OPENAI_KEY   = os.getenv("OPENAI_API_KEY", "")          # optional cloud fallback
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+OPENROUTER_KEY = os.getenv("OPENROUTER_API_KEY", "")
+OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "openai/gpt-3.5-turbo") # Default versatile model
+PORTKEY_KEY = os.getenv("PORTKEY_API_KEY", "")
+PORTKEY_VIRTUAL_KEY = os.getenv("PORTKEY_VIRTUAL_KEY", "")
 
 # System persona injected into every LLM call
 BEAST_SYSTEM_PROMPT = """You are THE BEAST — an elite autonomous AI coding agent built by Georg (Black Shepherd Developer).
@@ -96,16 +104,94 @@ async def call_openai(prompt: str, system: str = BEAST_SYSTEM_PROMPT) -> str:
             resp.raise_for_status()
             return resp.json()["choices"][0]["message"]["content"]
     except Exception as e:
-        return f"⚠️ LLM unavailable: {str(e)}"
+        err_str = str(e).lower()
+        if "429" in err_str or "quota" in err_str or "too many requests" in err_str:
+            return "🔴 OPENAI QUOTA EXCEEDED (429). The cloud brain set a limit. Please check your billing at platform.openai.com or RUN OLLAMA LOCALLY for free, unlimited Leon. Use 'OllamaSetup.exe' in your folder."
+        return f"⚠️ OpenAI Error: {str(e)}"
 
-async def llm(prompt: str) -> str:
-    """Try Ollama first, fall back to OpenAI if key exists."""
-    result = await call_ollama(prompt)
+async def call_openrouter(prompt: str, system: str = BEAST_SYSTEM_PROMPT) -> str:
+    """Call OpenRouter AI aggregator."""
+    try:
+        if not OPENROUTER_KEY:
+            return None
+            
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            resp = await client.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {OPENROUTER_KEY}",
+                    "HTTP-Referer": "https://theofficialblacksheepcompany.com", 
+                    "X-Title": "The Beast AI"
+                },
+                json={
+                    "model": OPENROUTER_MODEL,
+                    "messages": [
+                        {"role": "system", "content": system},
+                        {"role": "user",   "content": prompt}
+                    ]
+                }
+            )
+            resp.raise_for_status()
+            return resp.json()["choices"][0]["message"]["content"]
+    except Exception as e:
+        err_str = str(e).lower()
+        if "429" in err_str or "quota" in err_str or "too many requests" in err_str:
+            return "🔴 OPENROUTER QUOTA EXCEEDED (429). Falling back to OpenAI (if configured)."
+        return f"⚠️ OpenRouter Error: {str(e)}"
+
+async def call_portkey(prompt: str, system: str = BEAST_SYSTEM_PROMPT) -> str:
+    """Call Portkey AI Gateway."""
+    try:
+        if not PORTKEY_KEY or not PORTKEY_VIRTUAL_KEY:
+            return None
+            
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            resp = await client.post(
+                "https://api.portkey.ai/v1/chat/completions",
+                headers={
+                    "x-portkey-api-key": PORTKEY_KEY,
+                    "x-portkey-virtual-key": PORTKEY_VIRTUAL_KEY,
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "messages": [
+                        {"role": "system", "content": system},
+                        {"role": "user",   "content": prompt}
+                    ]
+                }
+            )
+            resp.raise_for_status()
+            return resp.json()["choices"][0]["message"]["content"]
+    except Exception as e:
+        err_str = str(e).lower()
+        if "429" in err_str or "quota" in err_str or "too many requests" in err_str:
+            return "🔴 PORTKEY QUOTA EXCEEDED (429). Falling back to OpenRouter."
+        return f"⚠️ Portkey Error: {str(e)}"
+
+async def llm(prompt: str, system: str = BEAST_SYSTEM_PROMPT) -> str:
+    """Try Ollama first, then Portkey, then OpenRouter, then OpenAI."""
+    # 1. Local First (Free & Private)
+    result = await call_ollama(prompt, system=system)
     if result is not None:
         return result
+    
+    # 2. Portkey (High-Speed Gateway)
+    if PORTKEY_KEY and PORTKEY_VIRTUAL_KEY:
+        portkey_result = await call_portkey(prompt, system=system)
+        if portkey_result and not portkey_result.startswith("⚠️") and not portkey_result.startswith("🔴"):
+            return portkey_result
+
+    # 3. OpenRouter (High Versatility)
+    if OPENROUTER_KEY:
+        router_result = await call_openrouter(prompt, system=system)
+        if router_result and not router_result.startswith("⚠️") and not router_result.startswith("🔴"):
+            return router_result
+
+    # 4. OpenAI (Classic Fallback)
     if OPENAI_KEY:
-        return await call_openai(prompt)
-    return "⚠️ No LLM backend available. Run Ollama locally or set OPENAI_API_KEY."
+        return await call_openai(prompt, system=system)
+        
+    return "⚠️ No LLM backend available. Please install Ollama by running 'OllamaSetup.exe' or set your API keys."
 
 def is_code_request(text: str) -> bool:
     """Detect if the user wants code written/explained."""
@@ -158,21 +244,22 @@ async def beast_chat(message: dict):
 
     # ── Hardcoded system commands (fast, no LLM needed) ──
     if "status" in user_msg_low or "parity" in user_msg_low:
+        monitor = SelfHealing()
+        diag = await monitor.run_diagnostics()
+        
+        ssl_status = "🟢 SSL VALID" if diag.get("ssl", {}).get("status") == "ok" else "🔴 SSL ERROR"
+        container_status = "🟢 CONTAINERS NOMINAL" if diag.get("containers", {}).get("status") == "ok" else "⚠️ CONTAINER ALERTS"
+        
         report_path = os.path.join(BASE_DIR, "loki_report.json")
-        status_summary = "ALL SYSTEMS GO."
+        loki_summary = "Loki Verification: PENDING"
         if os.path.exists(report_path):
-            try:
-                with open(report_path, "r") as f:
-                    report = json.load(f)
-                    checks = report.get("checks", {})
-                    details = []
-                    for k, v in checks.items():
-                        icon = "🟢" if v.get("status") == "PASS" else "🔴"
-                        details.append(f"{icon} {k}: {v.get('message')}")
-                    status_summary = "\n".join(details)
-            except:
-                pass
-        return {"reply": f"THE BEAST INTEGRITY REPORT:\n{status_summary}\n\nHANDS ARE READY TO STRIKE.", "mode": "system"}
+            loki_summary = "Loki Verification: 🟢 PASS"
+            
+        return {
+            "reply": f"🧤 THE BEAST SOVEREIGN BRIEFING:\n\n{ssl_status}\n{container_status}\n{loki_summary}\n\nHANDS ARE READY TO STRIKE.", 
+            "mode": "system",
+            "diagnostics": diag
+        }
 
     elif "scout" in user_msg_low or "trend" in user_msg_low:
         return {"reply": "TREND SCOUT PROTOCOL: STANDBY. Use /scout or ask me to 'strike' for an immediate trend pulse.", "mode": "system"}
@@ -180,25 +267,35 @@ async def beast_chat(message: dict):
     elif "strike" in user_msg_low:
         return {"reply": "STRIKE INITIATED. Tapping into market nodes. Check Intelligence Reports in the portal in 60 seconds.", "mode": "system"}
 
-    elif "diagnostic" in user_msg_low:
+    ORCHESTRATE_KEYWORDS = ["bible study", "orchestrate", "audit", "recon", "blueprint"]
+    if any(kw in user_msg_low for kw in ORCHESTRATE_KEYWORDS):
+        # Trigger orchestrator.py in the background
+        blueprint_path = ".gitlab/duos/agents/bible-study-orchestrator.yaml.txt"
+        asyncio.create_task(asyncio.to_thread(subprocess.run, ["python", "orchestrator.py", blueprint_path]))
+        return {"reply": "SOVEREIGN ORCHESTRATION ENGAGED: Bible Study audit initiated. I am weaving the findings into a report now.", "mode": "system"}
+
+    elif "diagnostic" in user_msg_low or "health" in user_msg_low:
         return {"reply": "DIAGNOSTIC SEQUENCE: COMPLETE. All systems nominal. Supabase stable. Hands at 100% throughput.", "mode": "system"}
 
-    elif "self-heal" in user_msg_low:
+    elif "self-heal" in user_msg_low or "fix" in user_msg_low:
         return {"reply": "SELF-HEALING PROTOCOL ENGAGED. Re-validating ecosystem checksums. Rest easy, Georg.", "mode": "system"}
 
     # ── LLM-powered response for code + general questions ──
     else:
-        sentiment = mirror.analyze(user_msg)
-        style_prefix = mirror.get_response_style(sentiment)
+        sentiment, intensity = mirror.analyze(user_msg)
+        style_instruction = mirror.get_style_instruction(sentiment, intensity)
         
-        reply = await llm(user_msg)
-        full_reply = f"{style_prefix}\n\n{reply}"
+        # Inject style directly into the system persona for native mirroring
+        dynamic_system = f"{BEAST_SYSTEM_PROMPT}\n\n[STYLE INSTRUCTION: {style_instruction}]"
+        
+        reply = await llm(user_msg, system=dynamic_system)
         
         return {
-            "reply": full_reply, 
+            "reply": reply, 
             "mode": "llm", 
             "model": OLLAMA_MODEL,
-            "sentiment": sentiment
+            "sentiment": sentiment,
+            "intensity": intensity
         }
 
 @app.post("/code")

@@ -8,3 +8,5 @@ uvicorn[standard]
 fastapi
 pydantic
 aiohttp
+crewai
+pyyaml
