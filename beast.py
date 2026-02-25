@@ -39,6 +39,7 @@ def main():
     parser.add_argument("--scout", action="store_true", help="Trigger Trend Scout")
     parser.add_argument("--seo", type=str, help="Trigger SEO Monitor for URL")
     parser.add_argument("--chat", type=str, help="Chat with The Beast")
+    parser.add_argument("query", nargs="*", help="Natural language command/query")
     parser.add_argument("--msg", type=str, help="Send message via OpenClaw")
     parser.add_argument("--channel", type=str, default="matrix", help="Channel for message")
     parser.add_argument("--mcp-list", action="store_true", help="List tools from connected MCP servers")
@@ -47,7 +48,7 @@ def main():
     parser.add_argument("--mcp-call", nargs=3, metavar=("SERVER", "TOOL", "ARGS_JSON"), help="Call an MCP tool")
     parser.add_argument("--local", action="store_true", help="Talk to local Beast (localhost:8000)")
 
-    args = parser.parse_args()
+    args, unknown = parser.parse_known_args()
 
     global HANDS_URL, VOICE_URL
     if args.local:
@@ -117,10 +118,11 @@ def main():
             print(f"RESULT: {resp.json()}")
         except Exception as e:
             print(f"FAILED TO CALL TOOL: {e}")
-    elif args.chat:
-        print("\n--- INITIATING COMMS WITH THE BEAST ---")
+    elif args.chat or args.query:
+        chat_text = args.chat if args.chat else " ".join(args.query)
+        print(f"\n--- INITIATING COMMS WITH THE BEAST ---")
         try:
-            resp = requests.post(f"{HANDS_URL}/chat", json={"text": args.chat})
+            resp = requests.post(f"{HANDS_URL}/chat", json={"text": chat_text})
             data = resp.json()
             sentiment = data.get('sentiment', 'relaxed').upper()
             reply = data.get('reply', '...')

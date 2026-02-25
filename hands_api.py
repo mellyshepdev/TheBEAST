@@ -344,6 +344,55 @@ async def run_scan(background_tasks: BackgroundTasks):
     background_tasks.add_task(subprocess.run, ["python", SCRIPTS["scan"]])
     return {"message": "Barcode scanning procedure initiated."}
 
+@app.post("/wisdom")
+async def get_wisdom(query: dict):
+    """
+    RAG Search (Retrieval Augmented Generation).
+    Searches Supabase cloud_files via vector similarity for relevant context.
+    """
+    text = query.get("text", "")
+    if not text or not OPENAI_KEY:
+        return {"wisdom": []}
+    
+    try:
+        # 1. Generate Query Embedding
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                "https://api.openai.com/v1/embeddings",
+                headers={"Authorization": f"Bearer {OPENAI_KEY}"},
+                json={"input": text, "model": "text-embedding-3-small"},
+                timeout=10.0
+            )
+            resp.raise_for_status()
+            vector = resp.json()["data"][0]["embedding"]
+        
+        # 2. Search Supabase (RPC call to match_files)
+        # Note: This assumes a 'match_files' function exists in Supabase postgres
+        supabase_headers = {
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {os.environ.get('SUPABASE_SERVICE_ROLE_KEY')}",
+            "Content-Type": "application/json"
+        }
+        
+        rpc_url = f"{SUPABASE_URL}/rest/v1/rpc/match_files"
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                rpc_url,
+                headers=supabase_headers,
+                json={
+                    "query_embedding": vector,
+                    "match_threshold": 0.5,
+                    "match_count": 5
+                }
+            )
+            # If function doesn't exist, we fallback to an empty list
+            results = resp.json() if resp.status_code == 200 else []
+            
+        return {"wisdom": results}
+    except Exception as e:
+        print(f"[WISDOM] Search failed: {e}")
+        return {"wisdom": [], "error": str(e)}
+
 @app.post("/authorize")
 async def strike_authorize(request: dict):
     """

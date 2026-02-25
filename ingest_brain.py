@@ -21,6 +21,26 @@ SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 ANYTHING_LLM_API_KEY = os.environ.get("ANYTHING_LLM_API_KEY", "")
 ANYTHING_LLM_URL = os.environ.get("ANYTHING_LLM_URL", "http://localhost:3001/api/v1")
 N8N_INGEST_WEBHOOK = os.environ.get("N8N_INGEST_WEBHOOK", "http://localhost:5678/webhook/Beast-Cloud-Ingest")
+OPENAI_KEY = os.environ.get("OPENAI_API_KEY", "")
+
+def get_embedding(text):
+    """Generate embedding using OpenAI text-embedding-3-small."""
+    if not OPENAI_KEY:
+        return None
+    try:
+        # Truncate text to avoid token limits (approx 8k tokens)
+        text = text[:32000].replace("\n", " ")
+        resp = requests.post(
+            "https://api.openai.com/v1/embeddings",
+            headers={"Authorization": f"Bearer {OPENAI_KEY}"},
+            json={"input": text, "model": "text-embedding-3-small"},
+            timeout=30
+        )
+        resp.raise_for_status()
+        return resp.json()["data"][0]["embedding"]
+    except Exception as e:
+        print(f"Embedding failed: {e}")
+        return None
 
 def send_to_n8n(file_data):
     """Notify n8n of a new ingested file."""
@@ -107,6 +127,23 @@ class BrainIngester:
 
             print(f"[LIVE] Ingesting: {os.path.basename(filepath)}...")
             
+            # ── Embedding Strike ────────────────────────────────────────────────
+            embedding = None
+            try:
+                with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
+                    content = f.read()
+                    if content.strip():
+                        embedding = get_embedding(content)
+            except:
+                pass
+            
+            if embedding:
+                payload["embedding"] = embedding
+            
+            # Fallback for user_id to avoid RLS/FK constraint failures during initial setup
+            # In a production context, this would be the actual auth.uid()
+            payload["user_id"] = os.environ.get("STRIKE_USER_ID", "00000000-0000-0000-0000-000000000000")
+
             # Use Service Role Key to bypass RLS for initial ingestion
             headers = {**self.headers, "Authorization": f"Bearer {os.environ.get('SUPABASE_SERVICE_ROLE_KEY')}"}
             
