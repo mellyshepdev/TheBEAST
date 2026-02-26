@@ -43,11 +43,17 @@ def strike(source, destination_dir):
 
 if __name__ == "__main__":
     targets = [
-        r"C:\Users\Georg\Videos\20150724_161838.KXJz7mXu.mp4.part",
-        r"C:\Users\Georg\AppData\Local\Temp\WinGet\Google.Chrome.145.0.7632.76\7f8bab306a72cbb6778450ddc66a4ccba66e399061d5e96444ea8d57dc5fd886"
+        r"C:\Users\Georg\OneDrive\Pictures\SD Card 1\20250128_143721.mp4",
+        r"C:\Users\Georg\OneDrive\Pictures\SD Card 1\20240412_105340.mp4",
+        r"C:\Users\Georg\OneDrive\Pictures\SD Card\videos\Downloading\Photos.zip",
+        r"C:\Users\Georg\OneDrive\Pictures\SD Card\videos\Downloading\Photos\Photos.zip",
+        r"C:\Users\Georg\OneDrive\Pictures\SD Card\videos\20241215_120945.mp4",
+        r"C:\Users\Georg\OneDrive\Pictures\Camera Roll\VID_20250902_174701.mp4",
+        r"C:\Users\Georg\OneDrive\Pictures\SD Card\videos\20250913_071345.mp4",
+        r"C:\Users\Georg\OneDrive\Pictures\SD Card 1\20210722_135103.mp4"
     ]
     
-    dest_path = r"G:\My Drive\Beast_Offload"
+    dest_path = r"D:\Beast_Offload"
     
     success_count = 0
     for target in targets:

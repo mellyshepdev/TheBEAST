@@ -8,7 +8,7 @@ def find_large_files_ext(start_path, extensions=None, limit=20):
     large_files = []
     
     # Folders to skip
-    skip_dirs = ['System32', 'Windows', 'Program Files', 'Program Files (x86)', '.git', 'node_modules', '.venv', 'AppData']
+    skip_dirs = ['System32', 'Windows', 'Program Files', 'Program Files (x86)', '.git', 'node_modules', '.venv', 'AppData', 'OneDrive']
     
     for root, dirs, files in os.walk(start_path):
         dirs[:] = [d for d in dirs if d not in skip_dirs]
